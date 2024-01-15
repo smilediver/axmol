@@ -28,6 +28,7 @@
 #include "base/EventType.h"
 #include "base/EventCustom.h"
 #include "base/EventDispatcher.h"
+#include "base/GmsIntegration.h"
 #include "platform/Application.h"
 #include "platform/FileUtils.h"
 #include <jni.h>
@@ -35,12 +36,16 @@
 #include "base/UTF8.h"
 
 USING_NS_AX;
+using namespace ax::internal;
 
 extern "C" {
 
 JNIEXPORT void JNICALL Java_org_axmol_lib_AxmolRenderer_nativeRender(JNIEnv*, jclass)
 {
+    auto& events = getGmsEventHooks();
+    events.frameStart();
     ax::Director::getInstance()->mainLoop();
+    events.frameEnd();
 }
 
 JNIEXPORT void JNICALL Java_org_axmol_lib_AxmolRenderer_nativeOnPause(JNIEnv*, jclass)

@@ -31,6 +31,7 @@
 #import <OpenGLES/EAGL.h>
 
 #import "base/Director.h"
+#import "base/GmsIntegration.h"
 #import "platform/ios/EAGLView-ios.h"
 
 static id s_sharedDirectorCaller;
@@ -137,6 +138,9 @@ static id s_sharedDirectorCaller;
 {
     if (isAppActive)
     {
+        auto& events = ax::internal::getGmsEventHooks();
+        events.frameStart();
+
         ax::Director* director = ax::Director::getInstance();
 #if AX_GLES_PROFILE
         EAGLContext* cocos2dxContext = [(EAGLView*)director->getGLView()->getEAGLView() context];
@@ -148,6 +152,8 @@ static id s_sharedDirectorCaller;
         CFTimeInterval dt = ((CADisplayLink*)displayLink).timestamp - lastDisplayTime;
         lastDisplayTime   = ((CADisplayLink*)displayLink).timestamp;
         director->mainLoop(dt);
+
+        events.frameEnd();
     }
 }
 

@@ -19,6 +19,7 @@
 
 #include "AxmolRenderer.h"
 #include "AppDelegate.h"
+#include "base/GmsIntegration.h"
 #include "platform/winrt/GLViewImpl-winrt.h"
 #include "platform/Application.h"
 #include "renderer/TextureCache.h"
@@ -97,6 +98,9 @@ void AxmolRenderer::DeviceLost()
     auto director = ax::Director::getInstance();
     if (director->getGLView())
     {
+        auto& events = ax::internal::getGmsEventHooks();
+        events.rendererRecreatedStart();
+
         // TODO:
         // ax::GL::invalidateStateCache();
         // ax::GLProgramCache::getInstance()->reloadDefaultGLPrograms();
@@ -106,6 +110,10 @@ void AxmolRenderer::DeviceLost()
         ax::EventCustom recreatedEvent(EVENT_RENDERER_RECREATED);
         director->getEventDispatcher()->dispatchEvent(&recreatedEvent, true);
         director->setGLDefaultValues();
+
+        events.rendererRecreated();
+
+        events.rendererRecreatedEnd();
 
         Application::getInstance()->applicationWillEnterForeground();
         ax::EventCustom foregroundEvent(EVENT_COME_TO_FOREGROUND);

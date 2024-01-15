@@ -111,6 +111,7 @@ set(_AX_BASE_SRC
     base/EventListenerTouch.cpp
     base/EventMouse.cpp
     base/EventTouch.cpp
+    base/GmsIntegration.cpp
     base/IMEDispatcher.cpp
     base/NS.cpp
     base/Profiling.cpp

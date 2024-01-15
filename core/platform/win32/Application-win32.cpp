@@ -26,6 +26,7 @@ THE SOFTWARE.
 ****************************************************************************/
 #include "platform/Application.h"
 #include "base/Director.h"
+#include "base/GmsIntegration.h"
 #include <algorithm>
 #include "platform/FileUtils.h"
 #include <shellapi.h>
@@ -86,6 +87,7 @@ int Application::run()
 
     auto director = Director::getInstance();
     auto glView   = director->getGLView();
+    auto& hooks   = ax::internal::getGmsEventHooks();
 
     // Retain glView to avoid glView being released in the while loop
     glView->retain();
@@ -98,6 +100,8 @@ int Application::run()
 
     while (!glView->windowShouldClose())
     {
+        hooks.frameStart();
+
         QueryPerformanceCounter(&nNow);
         interval = nNow.QuadPart - nLast.QuadPart;
         if (interval >= _animationInterval.QuadPart)
@@ -117,6 +121,8 @@ int Application::run()
             if (waitMS > 1L)
                 Sleep(waitMS);
         }
+
+        hooks.frameEnd();
     }
 
     // Director should still do a cleanup if the window was closed manually.

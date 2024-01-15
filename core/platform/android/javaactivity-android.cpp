@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "base/EventCustom.h"
 #include "base/EventType.h"
 #include "base/EventDispatcher.h"
+#include "base/GmsIntegration.h"
 #include "renderer/backend/DriverBase.h"
 #include "renderer/TextureCache.h"
 #include "platform/android/jni/JniHelper.h"
@@ -96,14 +97,20 @@ JNIEXPORT void JNICALL Java_org_axmol_lib_AxmolRenderer_nativeInit(JNIEnv*, jcla
     }
     else
     {
+        auto& events = ax::internal::getGmsEventHooks();
+        events.rendererRecreatedStart();
+
         backend::DriverBase::getInstance()->resetState();
         ax::Director::getInstance()->resetMatrixStack();
         ax::EventCustom recreatedEvent(EVENT_RENDERER_RECREATED);
         director->getEventDispatcher()->dispatchEvent(&recreatedEvent, true);
         director->setGLDefaultValues();
+        events.rendererRecreated();
 #if AX_ENABLE_CACHE_TEXTURE_DATA
         ax::VolatileTextureMgr::reloadAllTextures();
 #endif
+
+        events.rendererRecreatedEnd();
     }
 }
 

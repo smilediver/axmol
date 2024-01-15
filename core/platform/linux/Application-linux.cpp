@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <string>
 #include <thread>
 #include "base/Director.h"
+#include "base/GmsIntegration.h"
 #include "base/Utils.h"
 #include "platform/FileUtils.h"
 
@@ -62,12 +63,15 @@ int Application::run()
 
     auto director = Director::getInstance();
     auto glView   = director->getGLView();
+    auto& hooks   = ax::internal::getGmsEventHooks();
 
     // Retain glView to avoid glView being released in the while loop
     glView->retain();
 
     while (!glView->windowShouldClose())
     {
+        hooks.frameStart();
+
         lastTime = std::chrono::steady_clock::now();
 
         director->mainLoop();
@@ -83,6 +87,8 @@ int Application::run()
         {
             std::this_thread::yield();
         }
+
+        hooks.frameEnd();
     }
     /* Only work on Desktop
      *  Director::mainLoop is really one frame logic

@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include "renderer/Renderer.h"
 #include "renderer/RenderState.h"
 #include "2d/Camera.h"
+#include "base/GmsIntegration.h"
 #include "base/UserDefault.h"
 #include "base/Utils.h"
 #include "base/FPSImages.h"
@@ -69,6 +70,7 @@ THE SOFTWARE.
 #endif
 
 using namespace std;
+using namespace ax::internal;
 
 NS_AX_BEGIN
 // FIXME: it should be a Director ivar. Move it there once support for multiple directors is added
@@ -92,9 +94,13 @@ Director* Director::getInstance()
 {
     if (!s_SharedDirector)
     {
+        getGmsEventHooks().directorInitStart();
+
         s_SharedDirector = new Director();
         AXASSERT(s_SharedDirector, "FATAL: Not enough memory");
         s_SharedDirector->init();
+
+        getGmsEventHooks().directorInitEnd();
     }
 
     return s_SharedDirector;
@@ -271,27 +277,50 @@ void Director::setGLDefaultValues()
 // Draw the Scene
 void Director::drawScene()
 {
+    auto& events = getGmsEventHooks();
+
+    events.rendererBeginFrameStart();
     _renderer->beginFrame();
+    events.rendererBeginFrameEnd();
 
     // calculate "global" dt
     calculateDeltaTime();
 
     if (_glView)
     {
+        events.framePollEventsStart();
         _glView->pollEvents();
+        events.framePollEventsEnd();
     }
+
+    events.frameUpdateStart();
 
     // tick before glClear: issue #533
     if (!_paused)
     {
+        events.beforeUpdateStart();
         _eventDispatcher->dispatchEvent(_eventBeforeUpdate);
+        events.beforeUpdateEnd();
+
+        events.updateStart();
         _scheduler->update(_deltaTime);
+        events.updateEnd();
+
+        events.afterUpdateStart();
         _eventDispatcher->dispatchEvent(_eventAfterUpdate);
+        events.afterUpdateEnd();
     }
 
-    _renderer->clear(ClearFlag::ALL, _clearColor, 1, 0, -10000.0);
+    events.frameUpdateEnd();
+    events.frameRenderStart();
 
+    events.drawClearStart();
+    _renderer->clear(ClearFlag::ALL, _clearColor, 1, 0, -10000.0);
+    events.drawClearEnd();
+
+    events.beforeDrawStart();
     _eventDispatcher->dispatchEvent(_eventBeforeDraw);
+    events.beforeDrawEnd();
 
     /* to avoid flickr, nextScene MUST be here: after tick and before draw.
      * FIXME: Which bug is this one. It seems that it can't be reproduced with v0.9
@@ -313,10 +342,15 @@ void Director::drawScene()
         _renderer->clearDrawStats();
 
         // render the scene
-        if (_glView)
+        if (_glView) {
+            events.drawStart();
             _glView->renderScene(_runningScene, _renderer);
+            events.drawEnd();
+        }
 
+        events.afterVisitStart();
         _eventDispatcher->dispatchEvent(_eventAfterVisit);
+        events.afterVisitEnd();
     }
 
     // draw the notifications node
@@ -334,13 +368,19 @@ void Director::drawScene()
 #endif
     }
 
+    events.renderStart();
     _renderer->render();
+    events.renderEnd();
 
+    events.afterDrawStart();
     _eventDispatcher->dispatchEvent(_eventAfterDraw);
+    events.afterDrawEnd();
 
     popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
     _totalFrames++;
+
+    events.frameRenderEnd();
 
     // swap buffers
     if (_glView)
@@ -348,7 +388,9 @@ void Director::drawScene()
         _glView->swapBuffers();
     }
 
+    events.rendererEndFrameStart();
     _renderer->endFrame();
+    events.rendererEndFrameEnd();
 
     if (_statsDisplay)
     {

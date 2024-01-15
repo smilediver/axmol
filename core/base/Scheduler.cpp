@@ -27,10 +27,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
+#include "base/GmsIntegration.h"
 #include "base/Scheduler.h"
 #include "base/Macros.h"
 #include "base/Director.h"
 #include "base/ScriptSupport.h"
+
+using namespace ax::internal;
 
 NS_AX_BEGIN
 
@@ -850,6 +853,8 @@ void Scheduler::update(float dt)
     // Functions allocated from another thread
     //
 
+    auto& events = getGmsEventHooks();
+    events.runOnAxmolThreadStart();
     // Testing size is faster than locking / unlocking.
     // And almost never there will be functions scheduled to be called.
     if (!_actionsToPerform.empty())
@@ -865,6 +870,7 @@ void Scheduler::update(float dt)
             function();
         }
     }
+    events.runOnAxmolThreadEnd();
 }
 
 void Scheduler::schedule(SEL_SCHEDULE selector,
