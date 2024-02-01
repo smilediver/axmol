@@ -307,7 +307,7 @@ protected:
         return it == _spriteSheets.end() ? false : it->second->full;
     }
 
-private:
+protected:
     StringMap<SpriteFrame*> _spriteFrames;
     hlookup::string_map<std::shared_ptr<SpriteSheet>> _spriteSheets;
     hlookup::string_map<std::shared_ptr<SpriteSheet>> _spriteFrameToSpriteSheetMap;
