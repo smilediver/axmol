@@ -1,0 +1,116 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "unit-tests debug/ninja",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/unit-tests-debug/bin/unit-tests/unit-tests.exe",
+                "args": [],
+                "cwd": "${workspaceFolder}/build/unit-tests-debug/bin",
+                "preLaunchTask": "build unit-tests debug/ninja",
+                "internalConsoleOptions": "neverOpen",
+                "console": "integratedTerminal",
+            },
+        ],
+    },
+    "tasks": {
+        "version": "2.0.0",
+        /*
+        "windows": {
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d", "/c", "\"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat\"", "&"
+                    ]
+                }
+            }
+        },
+        //*/
+        "tasks": [
+            {
+                "label": "build unit-tests debug/ninja",
+                "type": "shell",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                },
+                "command": "ninja",
+                "args": [
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder}/build/unit-tests-debug",
+                    "env": {
+                        "AX_ROOT": "",
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "build unit-tests debug/vs",
+                "type": "shell",
+                "command": "cmake",
+                "args": [
+                    "--build", "${workspaceFolder}/tests/unit-tests/build_x64",
+                    "--config", "Debug",
+                    "--target", "unit-tests",
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "cmake unit-tests debug",
+                "type": "shell",
+                "command": "cmake",
+                "args": [
+                    "-G", "Ninja",
+                    "-S", "${workspaceFolder}/tests/unit-tests",
+                    "-B", "${workspaceFolder}/build/unit-tests-debug",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "setup unit-tests debug",
+                "type": "shell",
+                "command": "tools\\cmdline\\axmol",
+                "args": [
+                    "build",
+                    "-p", "win32",
+                    "-xb", "'--config,Debug'",
+                    "-d", "tests/unit-tests"
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+        ]
+    },
+    "settings": {
+        "C_Cpp.default.compileCommands": "${workspaceFolder}/build/unit-tests-debug/compile_commands.json",
+        "files.associations": {
+            "xstring": "cpp",
+            "vector": "cpp",
+            "future": "cpp"
+        },
+    }
+}

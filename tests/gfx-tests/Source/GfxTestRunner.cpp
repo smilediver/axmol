@@ -1,0 +1,217 @@
+/****************************************************************************
+Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
+
+https://axmolengine.github.io/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+****************************************************************************/
+
+#include <string>
+#include <doctest.h>
+#include "base/Director.h"
+#include "base/RefPtr.h"
+#include "GfxTestRunner.h"
+#include "Test.h"
+
+USING_NS_AX;
+
+
+static std::function<void(RefPtr<Image>&&)> gCaptureFrameRequester;
+static Task<void> gTest;
+
+
+void GfxTestRunner::setupTesting() {
+    auto director = Director::getInstance();
+    auto renderer = director->getRenderer();
+    auto dispatcher = director->getEventDispatcher();
+
+    // !!!Metal: needs setFrameBufferOnly before draw
+    #if defined(AX_USE_METAL)
+        auto captureEvent = Director::EVENT_BEFORE_DRAW;
+    #else
+        auto captureEvent = Director::EVENT_AFTER_DRAW;
+    #endif
+
+    dispatcher->addCustomEventListener(captureEvent, [=](EventCustom*) {
+        if (gCaptureFrameRequester) {
+            // Schedule capturing of the frame during this frame
+            renderer->readPixels(renderer->getDefaultRenderTarget(), [=](const backend::PixelBufferDescriptor& pbd) {
+                if (!pbd)
+                    throw std::runtime_error("Failed to read pixels");
+
+                auto image = utils::makeInstance<Image>(&Image::initWithRawData, pbd._data.getBytes(),
+                    pbd._data.getSize(), pbd._width, pbd._height, 8, false);
+
+                // Calling the requester might request another frame capture, so grab the requester
+                auto requester = std::move(gCaptureFrameRequester);
+                gCaptureFrameRequester = nullptr;
+
+                requester(std::forward<RefPtr<Image>>(image));
+            });
+        }
+    });
+}
+
+
+void GfxTestRunner::startTests() {
+    std::thread([] {
+        doctest::Context context;
+
+        context.applyCommandLine(0, 0);
+
+        //context.addFilter("test-case-exclude", "*math*"); // exclude test cases with "math" in their name
+        //context.setOption("abort-after", 5);              // stop test execution after 5 failed assertions
+        context.setOption("no-breaks", true);             // don't break in the debugger when assertions fail
+
+        int res = context.run(); // run
+        exit(res);
+        //return res;
+    }).detach();
+}
+
+
+void GfxTestRunner::runTest(std::function<Task<>(Scene* scene)> testStarter) {
+    Director::getInstance()->getScheduler()->runOnAxmolThread([=] {
+        auto scene = Scene::create();
+        gTest = testStarter(scene);
+        Director::getInstance()->replaceScene(scene);
+    });
+}
+
+
+Task<RefPtr<Image>> GfxTests::captureFrame() {
+    struct awaitable
+    {
+        RefPtr<Image>* _value;
+        std::coroutine_handle<> _requester;
+
+        bool await_ready() { return false; }
+        void await_suspend(std::coroutine_handle<> requester)
+        {
+            if (gCaptureFrameRequester)
+                throw std::runtime_error("captureFrame() is already in progress");
+            _requester = requester;
+            gCaptureFrameRequester = [this](RefPtr<Image>&& image) {
+                _value = std::addressof(image);
+                _requester.resume();
+            };
+        }
+        RefPtr<Image>&& await_resume() { return std::forward<RefPtr<Image>>(*_value); }
+
+        //std::function<void()> func;
+    };
+
+    co_return co_await awaitable{};
+}
+
+
+ax::RefPtr<ax::Image> GfxTests::loadImage(std::string_view path) {
+    auto image = RefPtr<Image>();
+    auto fullPath = FileUtils::getInstance()->fullPathForFilename(path);
+    if (!fullPath.empty())
+        image = utils::makeInstance<Image>(&Image::initWithImageFile, path);
+    return image;
+}
+
+
+void GfxTests::saveImage(const ax::Image& image, std::string_view path) {
+    auto fullPath = std::string();
+
+    if (not FileUtils::getInstance()->isAbsolutePath(path)) {
+        fullPath = FileUtils::getInstance()->getWritablePath() + std::string(path);
+        path = fullPath;
+    }
+
+    auto dir = path.substr(0, path.find_last_of('/'));
+    if (!FileUtils::getInstance()->createDirectory(dir))
+        throw std::runtime_error("Failed to create directory: " + std::string(dir));
+
+    if (!image.saveToFile(path, false))
+        throw std::runtime_error("Failed to save image: " + std::string(path));
+}
+
+
+ImageCompareResult GfxTests::compareImageToReference(const ax::Image* image, const ax::Image* reference, const ImageCompareSettings& settings) {
+    auto result = ImageCompareResult();
+
+    auto allowedPixelError = uint8_t(std::ceil(std::clamp(settings.pixelError, 0.0f, 1.0f) * 255));
+
+    if (image == nullptr)
+    {
+        result.error = "Image is null";
+    }
+    else if (reference == nullptr)
+    {
+        result.error = "Reference image is null";
+    }
+    else if (image->getWidth() != reference->getWidth() || image->getHeight() != reference->getHeight())
+    {
+        result.error = "Image sizes do not match";
+    }
+    else if (image->getPixelFormat() != backend::PixelFormat::RGBA8)
+    {
+        result.error = "Image format is not RGBA8";
+    }
+    else if (reference->getPixelFormat() != backend::PixelFormat::RGBA8)
+    {
+        result.error = "Reference image format is not RGBA8";
+    }
+    else
+    {
+        auto width = image->getWidth();
+        auto height = image->getHeight();
+        auto sizeInBytes = width * height * 4;
+        auto diffStart = new uint8_t[sizeInBytes];
+        auto diffEnd = diffStart + sizeInBytes;
+        auto imageData = image->getData();
+        auto referenceData = reference->getData();
+        auto failed = false;
+
+        GP_ASSERT(image->getDataLen() == sizeInBytes);
+        GP_ASSERT(reference->getDataLen() == sizeInBytes);
+
+        for (auto diff = diffStart; diff < diffEnd; diff += 4)
+        {
+            auto r = uint8_t(std::abs(imageData[0] - referenceData[0]));
+            auto g = uint8_t(std::abs(imageData[1] - referenceData[1]));
+            auto b = uint8_t(std::abs(imageData[2] - referenceData[2]));
+            auto a = uint8_t(std::abs(imageData[3] - referenceData[3]));
+
+            diff[0] = std::max(r, a);
+            diff[1] = std::max(g, a);
+            diff[2] = std::max(b, a);
+            diff[3] = 255;
+
+            auto error = r + g + b + a;
+            if (error > allowedPixelError)
+                failed = true;
+
+            imageData += 4;
+            referenceData += 4;
+        }
+
+        if (failed)
+            result.error = "Images differ";
+
+        result.difference = utils::makeInstance<Image>(
+            &Image::initWithRawData, diffStart, sizeInBytes, width, height, 8, false);
+    }
+
+    return result;
+}

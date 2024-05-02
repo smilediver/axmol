@@ -168,26 +168,27 @@ public:
 
     // Getters
     uint8_t* getData() { return _data + _offset; }
-    ssize_t getDataLen() { return _dataLen - _offset; }
-    Format getFileType() { return _fileType; }
-    backend::PixelFormat getPixelFormat() { return _pixelFormat; }
-    int getWidth() { return _width; }
-    int getHeight() { return _height; }
-    int getNumberOfMipmaps() { return _numberOfMipmaps; }
+    const uint8_t* getData() const { return _data + _offset; }
+    ssize_t getDataLen() const { return _dataLen - _offset; }
+    Format getFileType() const { return _fileType; }
+    backend::PixelFormat getPixelFormat() const { return _pixelFormat; }
+    int getWidth() const { return _width; }
+    int getHeight() const { return _height; }
+    int getNumberOfMipmaps() const { return _numberOfMipmaps; }
     MipmapInfo* getMipmaps() { return _mipmaps; }
-    bool hasPremultipliedAlpha() { return _hasPremultipliedAlpha; }
+    bool hasPremultipliedAlpha() const { return _hasPremultipliedAlpha; }
     std::string getFilePath() const { return _filePath; }
 
-    int getBitPerPixel();
-    bool hasAlpha();
-    bool isCompressed();
+    int getBitPerPixel() const;
+    bool hasAlpha() const;
+    bool isCompressed() const;
 
     /**
      @brief    Save Image data to the specified file, with specified format.
      @param    filePath        the file's absolute path, including file suffix.
      @param    isToRGB        whether the image is saved as RGB format.
      */
-    bool saveToFile(std::string_view filename, bool isToRGB = true);
+    bool saveToFile(std::string_view filename, bool isToRGB = true) const;
     void premultiplyAlpha();
     void reversePremultipliedAlpha();
 
@@ -217,8 +218,8 @@ protected:
     // fast forward pixels to GPU if ownData
     void forwardPixels(uint8_t* data, ssize_t dataLen, int offset, bool ownData);
 
-    bool saveImageToPNG(std::string_view filePath, bool isToRGB = true);
-    bool saveImageToJPG(std::string_view filePath);
+    bool saveImageToPNG(std::string_view filePath, bool isToRGB = true) const;
+    bool saveImageToJPG(std::string_view filePath) const;
 
 protected:
     /**

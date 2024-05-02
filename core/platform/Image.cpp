@@ -892,17 +892,17 @@ Image::Format Image::detectFormat(const uint8_t* data, ssize_t dataLen)
     return Format::UNKNOWN;
 }
 
-int Image::getBitPerPixel()
+int Image::getBitPerPixel() const
 {
     return backend::PixelFormatUtils::getFormatDescriptor(_pixelFormat).bpp;
 }
 
-bool Image::hasAlpha()
+bool Image::hasAlpha() const
 {
     return backend::PixelFormatUtils::getFormatDescriptor(_pixelFormat).alpha;
 }
 
-bool Image::isCompressed()
+bool Image::isCompressed() const
 {
     return backend::PixelFormatUtils::isCompressed(_pixelFormat);
 }
@@ -2306,7 +2306,7 @@ void Image::forwardPixels(uint8_t* data, ssize_t dataLen, int offset, bool ownDa
 }
 
 #if (AX_TARGET_PLATFORM != AX_PLATFORM_IOS)
-bool Image::saveToFile(std::string_view filename, bool isToRGB)
+bool Image::saveToFile(std::string_view filename, bool isToRGB) const
 {
     // only support for backend::PixelFormat::RGB8 or backend::PixelFormat::RGBA8 uncompressed data
     if (isCompressed() || (_pixelFormat != backend::PixelFormat::RGB8 && _pixelFormat != backend::PixelFormat::RGBA8))
@@ -2335,7 +2335,7 @@ bool Image::saveToFile(std::string_view filename, bool isToRGB)
 }
 #endif
 
-bool Image::saveImageToPNG(std::string_view filePath, bool isToRGB)
+bool Image::saveImageToPNG(std::string_view filePath, bool isToRGB) const
 {
 #if AX_USE_WIC
     return encodeWithWIC(filePath, isToRGB, GUID_ContainerFormatPng);
@@ -2480,7 +2480,7 @@ bool Image::saveImageToPNG(std::string_view filePath, bool isToRGB)
 #endif  // AX_USE_PNG
 }
 
-bool Image::saveImageToJPG(std::string_view filePath)
+bool Image::saveImageToJPG(std::string_view filePath) const
 {
 #if AX_USE_WIC
     return encodeWithWIC(filePath, false, GUID_ContainerFormatJpeg);

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "**/usr/include/c++/**": "cpp",
+        "**/MSVC/**/include/**": "cpp",
+    },
+}

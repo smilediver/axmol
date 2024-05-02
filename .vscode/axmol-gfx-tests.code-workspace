@@ -1,0 +1,126 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "gfx-tests debug/ninja (cppvsdbg)",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests/gfx-tests.exe",
+                "args": [],
+                "cwd": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests",
+                "preLaunchTask": "build gfx-tests debug/ninja",
+                "internalConsoleOptions": "neverOpen",
+                "console": "integratedTerminal",
+            },
+            {
+                "name": "gfx-tests debug/ninja (lldb)",
+                "type": "lldb",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests/gfx-tests.exe",
+                "args": [],
+                "cwd": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests",
+                "preLaunchTask": "build gfx-tests debug/ninja",
+                "internalConsoleOptions": "neverOpen",
+                "console": "integratedTerminal",
+            },
+        ],
+    },
+    "tasks": {
+        "version": "2.0.0",
+        /*
+        "windows": {
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d", "/c", "\"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat\"", "&"
+                    ]
+                }
+            }
+        },
+        //*/
+        "tasks": [
+            {
+                "label": "build gfx-tests debug/ninja",
+                "type": "shell",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                },
+                "command": "ninja",
+                "args": [
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder}/build/gfx-tests-debug",
+                    "env": {
+                        "AX_ROOT": "",
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "build gfx-tests debug/vs",
+                "type": "shell",
+                "command": "cmake",
+                "args": [
+                    "--build", "${workspaceFolder}/tests/gfx-tests/build_x64",
+                    "--config", "Debug",
+                    "--target", "gfx-tests",
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "cmake gfx-tests debug",
+                "type": "shell",
+                "command": "cmake",
+                "args": [
+                    "-G", "Ninja",
+                    "-S", "${workspaceFolder}/tests/gfx-tests",
+                    "-B", "${workspaceFolder}/build/gfx-tests-debug",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "setup gfx-tests debug",
+                "type": "shell",
+                "command": "tools\\cmdline\\axmol",
+                "args": [
+                    "build",
+                    "-p", "win32",
+                    "-xb", "'--config,Debug'",
+                    "-d", "tests/gfx-tests"
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+        ]
+    },
+    "settings": {
+        "C_Cpp.default.compileCommands": "${workspaceFolder}/build/gfx-tests-debug/compile_commands.json",
+        "files.associations": {
+            "**/usr/include/c++/**": "cpp",
+            "**/MSVC/**/include/**": "cpp",
+        },
+    },
+}

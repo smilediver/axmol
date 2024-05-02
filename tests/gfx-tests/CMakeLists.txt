@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 set(APP_NAME gfx-tests)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(AX_EXT_HINT OFF CACHE BOOL "" FORCE)
+
 
 # "too large PDB" error often occurs in gfx-tests when using default "/Zi"
 #if (MSVC)
@@ -18,14 +22,7 @@ if(NOT DEFINED BUILD_ENGINE_DONE)
         set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY TRUE)
     endif()
 
-    set(_AX_ROOT "$ENV{AX_ROOT}")
-    if(NOT (_AX_ROOT STREQUAL ""))
-        file(TO_CMAKE_PATH ${_AX_ROOT} _AX_ROOT)
-        message(STATUS "Using system env var _AX_ROOT=${_AX_ROOT}")
-    else()
-        set(_AX_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
-    endif()
-
+    set(_AX_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
     set(CMAKE_MODULE_PATH ${_AX_ROOT}/cmake/Modules/)
 
     include(AXBuildSet)
@@ -35,22 +32,28 @@ endif()
 #_1kfetch(sample-assets)
 #_1klink("${sample-assets_SOURCE_DIR}/gfx-tests/Content" "${CMAKE_CURRENT_LIST_DIR}/Content")
 
-# record sources, headers, resources...
-file(GLOB_RECURSE GAME_SOURCE Source/**.cpp)
-file(GLOB_RECURSE GAME_HEADER Source/**.h)
+set(GAME_SOURCE
+    Source/AppDelegate.cpp
+    Source/GfxTestRunner.cpp
+    ../unit-tests/Source/doctest.cpp
+
+    Source/core/2d/NodeGfxTests.cpp
+    Source/core/2d/SpriteGfxTests.cpp
+)
 
 set(GAME_INC_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}/Source"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../unit-tests/Source"
 )
 
 set(content_folder
     "${CMAKE_CURRENT_SOURCE_DIR}/Content"
 )
-#if(APPLE)
-#    ax_mark_multi_resources(common_content_files RES_TO "Resources" FOLDERS ${content_folder})
-#elseif(WINDOWS)
-#    ax_mark_multi_resources(common_content_files RES_TO "Content" FOLDERS ${content_folder})
-#endif()
+if(APPLE)
+    ax_mark_multi_resources(common_content_files RES_TO "Resources" FOLDERS ${content_folder})
+elseif(WINDOWS)
+    ax_mark_multi_resources(common_content_files RES_TO "Content" FOLDERS ${content_folder})
+endif()
 
 if(ANDROID)
     list(APPEND GAME_HEADER
@@ -182,10 +185,10 @@ endif()
 
 if ((NOT APPLE) AND (NOT WINRT))
     ax_get_resource_path(APP_RES_DIR ${APP_NAME})
-#    ax_sync_target_res(${APP_NAME} LINK_TO ${APP_RES_DIR} FOLDERS ${content_folder} SYM_LINK 1)
-#    if(WINDOWS)
-#        set_property(TARGET ${APP_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${content_folder}")
-#    endif()
+    ax_sync_target_res(${APP_NAME} LINK_TO ${APP_RES_DIR} FOLDERS ${content_folder} SYM_LINK 1)
+    if(WINDOWS)
+        set_property(TARGET ${APP_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${content_folder}")
+    endif()
 elseif(WINRT)
     if(NOT DEFINED BUILD_ENGINE_DONE)
         set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
@@ -194,7 +197,7 @@ endif()
 
 if((NOT IOS) AND (NOT WINRT))
     message("CMake ${APP_NAME} target_precompile_headers")
-    target_precompile_headers(${APP_NAME} PRIVATE 
+    target_precompile_headers(${APP_NAME} PRIVATE
       "$<$<COMPILE_LANGUAGE:CXX>:axmol.h>"
     )
 endif()

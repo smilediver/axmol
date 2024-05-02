@@ -1,0 +1,75 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "cpp-tests debug/vs",
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/tests/cpp-tests/build_x64/bin/cpp-tests/Debug/cpp-tests.exe",
+                "args": [],
+                "cwd": "${workspaceFolder}/tests/cpp-tests/build_x64/bin/cpp-tests/Debug/",
+                "preLaunchTask": "build cpp-tests debug/vs",
+                "internalConsoleOptions": "neverOpen",
+                "console": "integratedTerminal",
+            },
+        ],
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "windows": {
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d", "/c", "\"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat\"", "&"
+                    ]
+                }
+            }
+        },
+        "tasks": [
+            {
+                "label": "setup cpp-tests debug",
+                "type": "shell",
+                "command": "tools\\cmdline\\axmol",
+                "args": [
+                    "build",
+                    "-p", "win32",
+                    "-xb", "'--config,Debug'",
+                    "-d", "tests/cpp-tests"
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "build cpp-tests debug/vs",
+                "type": "shell",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                },
+                "command": "cmake",
+                "args": [
+                    "--build", "${workspaceFolder}/tests/cpp-tests/build_x64",
+                    "--config", "Debug",
+                    "--target", "cpp-tests",
+                ],
+                "options": {
+                    "env": {
+                        "AX_ROOT": ""
+                    }
+                },
+                "problemMatcher": []
+            },
+        ],
+    }
+}
