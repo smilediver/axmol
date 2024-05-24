@@ -33,18 +33,13 @@ USING_NS_AX;
 static const Vec2 gTestViewSize = Vec2(480, 270);
 
 
-void AppDelegate::initGLContextAttrs()
-{
-    // set OpenGL context attributes: red,green,blue,alpha,depth,stencil
-    GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0};
-
-    GLView::setGLContextAttrs(glContextAttrs);
-}
-
-
-bool AppDelegate::applicationDidFinishLaunching()
+AppDelegate::AppDelegate()
 {
     auto fu = FileUtils::getInstance();
+
+    #if AX_TARGET_PLATFORM == AX_PLATFORM_OSX
+        fu->setWritablePath(fu->getWritablePath() + "gfx-tests/");
+    #endif
 
     #if AX_TARGET_PLATFORM == AX_PLATFORM_WIN32 || AX_TARGET_PLATFORM == AX_PLATFORM_LINUX
         fu->setDefaultResourceRootPath(fu->getAppRoot() + "Content");
@@ -56,6 +51,21 @@ bool AppDelegate::applicationDidFinishLaunching()
         resourcesPath + "tests/default", // For finding test reference images
     });
 
+    fu->removeDirectory(fu->getWritablePath() + "results");
+}
+
+
+void AppDelegate::initGLContextAttrs()
+{
+    // set OpenGL context attributes: red,green,blue,alpha,depth,stencil
+    GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0};
+
+    GLView::setGLContextAttrs(glContextAttrs);
+}
+
+
+bool AppDelegate::applicationDidFinishLaunching()
+{
     // Enable logging output colored text style and prefix timestamp
     ax::setLogFmtFlag(ax::LogFmtFlag::Full);
 
@@ -74,7 +84,11 @@ bool AppDelegate::applicationDidFinishLaunching()
         title += " (Debug)",
 #endif
 #ifdef AX_PLATFORM_PC
-        glView = GLViewImpl::createWithRect(title, Rect(0, 0, gTestViewSize.x, gTestViewSize.y), 1.0F, true);
+        #if AX_TARGET_PLATFORM == AX_PLATFORM_OSX
+            glView = GLViewImpl::createWithRect(title, Rect(0, 0, gTestViewSize.x, gTestViewSize.y), 0.5f, false, false);
+        #else
+            glView = GLViewImpl::createWithRect(title, Rect(0, 0, gTestViewSize.x, gTestViewSize.y), 1.0f, false, true);
+        #endif
 #else
         glView = GLViewImpl::createWithRect(title, Rect(0, 0, gTestViewSize.x, gTestViewSize.y));
 #endif

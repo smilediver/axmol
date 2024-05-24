@@ -390,7 +390,7 @@ GLViewImpl* GLViewImpl::create(std::string_view viewName)
 GLViewImpl* GLViewImpl::create(std::string_view viewName, bool resizable)
 {
     auto ret = new GLViewImpl;
-    if (ret->initWithRect(viewName, ax::Rect(0, 0, 960, 640), 1.0f, resizable))
+    if (ret->initWithRect(viewName, ax::Rect(0, 0, 960, 640), 1.0f, resizable, true))
     {
         ret->autorelease();
         return ret;
@@ -402,10 +402,11 @@ GLViewImpl* GLViewImpl::create(std::string_view viewName, bool resizable)
 GLViewImpl* GLViewImpl::createWithRect(std::string_view viewName,
                                        const ax::Rect& rect,
                                        float frameZoomFactor,
-                                       bool resizable)
+                                       bool resizable,
+                                       bool scaleFramebuffer)
 {
     auto ret = new GLViewImpl;
-    if (ret->initWithRect(viewName, rect, frameZoomFactor, resizable))
+    if (ret->initWithRect(viewName, rect, frameZoomFactor, resizable, scaleFramebuffer))
     {
         ret->autorelease();
         return ret;
@@ -440,7 +441,7 @@ GLViewImpl* GLViewImpl::createWithFullScreen(std::string_view viewName,
     return nullptr;
 }
 
-bool GLViewImpl::initWithRect(std::string_view viewName, const ax::Rect& rect, float frameZoomFactor, bool resizable)
+bool GLViewImpl::initWithRect(std::string_view viewName, const ax::Rect& rect, float frameZoomFactor, bool resizable, bool scaleFramebuffer)
 {
     setViewName(viewName);
 
@@ -479,6 +480,10 @@ bool GLViewImpl::initWithRect(std::string_view viewName, const ax::Rect& rect, f
 
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32)
     glfwWindowHintPointer(GLFW_WIN32_HWND_PARENT, _glContextAttrs.viewParent);
+#endif
+
+#if (AX_TARGET_PLATFORM == AX_PLATFORM_MAC)
+    glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, scaleFramebuffer ? GLFW_TRUE : GLFW_FALSE);
 #endif
 
     _mainWindow = glfwCreateWindow(static_cast<int>(windowSize.width), static_cast<int>(windowSize.height),
@@ -557,8 +562,8 @@ bool GLViewImpl::initWithRect(std::string_view viewName, const ax::Rect& rect, f
     glfwSetCursorPosCallback(_mainWindow, GLFWEventHandler::onGLFWMouseMoveCallBack);
 #if defined(__EMSCRIPTEN__)
     // clang-format off
-    _isTouchDevice = !!EM_ASM_INT(return (('ontouchstart' in window) || 
-        (navigator.maxTouchPoints > 0) || 
+    _isTouchDevice = !!EM_ASM_INT(return (('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
         (navigator.msMaxTouchPoints > 0)) ? 1 : 0;
     );
     if (_isTouchDevice)

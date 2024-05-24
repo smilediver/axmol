@@ -32,6 +32,8 @@ struct TestSetup;
 class AppDelegate : private ax::Application
 {
 public:
+    AppDelegate();
+
     virtual void initGLContextAttrs();
 
     virtual bool applicationDidFinishLaunching();

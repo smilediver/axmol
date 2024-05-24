@@ -29,8 +29,6 @@ THE SOFTWARE.
 #include "base/RefPtr.h"
 #include "platform/Image.h"
 
-//template <class T> class Task;
-
 
 struct Empty{};
 
@@ -61,8 +59,6 @@ public:
 
     public:
         std::suspend_never initial_suspend() noexcept { return {}; }
-        //std::suspend_never final_suspend() noexcept { return {}; }
-        //*
         auto final_suspend() noexcept {
             struct Awaiter {
                 bool await_ready() const noexcept { return false; }
@@ -79,11 +75,6 @@ public:
 
             return Awaiter{};
         }
-        //*/
-        //std::enable_if_t<!std::is_void_v<T>, void> return_value(T&& value) {}
-        //std::enable_if_t<std::is_void_v<T>, void> return_value() {}
-        //void return_value(T&& value) {}
-        //void return_value() {}
         void unhandled_exception() {}
         Task<T> get_return_object() { return Task<T>(std::coroutine_handle<promise_type>::from_promise(*this)); }
     };
@@ -122,14 +113,15 @@ private:
 };
 
 
-struct ImageCompareSettings
-{
-    float pixelError = 0.0f;
-};
+//struct ImageCompareSettings
+//{
+//    float pixelError = 0.0f;
+//};
 
 
 struct ImageCompareResult
 {
+    int maxPixelError = 0;
     std::string error;
     ax::RefPtr<ax::Image> difference;
 };
@@ -143,5 +135,5 @@ public:
     static ax::RefPtr<ax::Image> loadImage(std::string_view path);
     static void saveImage(const ax::Image& image, std::string_view path);
 
-    static ImageCompareResult compareImageToReference(const ax::Image* image, const ax::Image* reference, const ImageCompareSettings& settings = {});
+    static ImageCompareResult compareImageToReference(const ax::Image* image, const ax::Image* reference);
 };

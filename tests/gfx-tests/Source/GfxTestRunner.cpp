@@ -147,10 +147,8 @@ void GfxTests::saveImage(const ax::Image& image, std::string_view path) {
 }
 
 
-ImageCompareResult GfxTests::compareImageToReference(const ax::Image* image, const ax::Image* reference, const ImageCompareSettings& settings) {
+ImageCompareResult GfxTests::compareImageToReference(const ax::Image* image, const ax::Image* reference) {
     auto result = ImageCompareResult();
-
-    auto allowedPixelError = uint8_t(std::ceil(std::clamp(settings.pixelError, 0.0f, 1.0f) * 255));
 
     if (image == nullptr)
     {
@@ -181,7 +179,6 @@ ImageCompareResult GfxTests::compareImageToReference(const ax::Image* image, con
         auto diffEnd = diffStart + sizeInBytes;
         auto imageData = image->getData();
         auto referenceData = reference->getData();
-        auto failed = false;
 
         GP_ASSERT(image->getDataLen() == sizeInBytes);
         GP_ASSERT(reference->getDataLen() == sizeInBytes);
@@ -199,15 +196,11 @@ ImageCompareResult GfxTests::compareImageToReference(const ax::Image* image, con
             diff[3] = 255;
 
             auto error = r + g + b + a;
-            if (error > allowedPixelError)
-                failed = true;
+            result.maxPixelError = std::max(result.maxPixelError, error);
 
             imageData += 4;
             referenceData += 4;
         }
-
-        if (failed)
-            result.error = "Images differ";
 
         result.difference = utils::makeInstance<Image>(
             &Image::initWithRawData, diffStart, sizeInBytes, width, height, 8, false);

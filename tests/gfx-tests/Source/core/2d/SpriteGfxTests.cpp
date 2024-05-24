@@ -104,10 +104,12 @@ TEST_SUITE("core/2d/Sprite") {
             auto reference = GfxTests::loadImage("core/2d/Sprite_Basic.png");
             auto comparison = GfxTests::compareImageToReference(frame, reference);
             GfxTests::saveImage(*frame, "results/core/2d/Sprite_Basic.png");
-            if (not comparison.error.empty() && comparison.difference)
-                GfxTests::saveImage(*comparison.difference, "results/core/2d/Sprite_Basic_diff.png");
+
+            CHECK_LE(comparison.maxPixelError, 2);
 
             CHECK_EQ(comparison.error, "");
+            if (not comparison.error.empty() && comparison.difference)
+                GfxTests::saveImage(*comparison.difference, "results/core/2d/Sprite_Basic_diff.png");
 
             promise.set_value();
         });
@@ -141,10 +143,12 @@ TEST_SUITE("core/2d/Sprite") {
             auto reference = GfxTests::loadImage("core/2d/Sprite_PixelPerfect.png");
             auto comparison = GfxTests::compareImageToReference(frame, reference);
             GfxTests::saveImage(*frame, "results/core/2d/Sprite_PixelPerfect.png");
-            if (not comparison.error.empty() && comparison.difference)
-                GfxTests::saveImage(*comparison.difference, "results/core/2d/Sprite_PixelPerfect_diff.png");
+
+            CHECK_LE(comparison.maxPixelError, 0);
 
             CHECK_EQ(comparison.error, "");
+            if (not comparison.error.empty() && comparison.difference)
+                GfxTests::saveImage(*comparison.difference, "results/core/2d/Sprite_PixelPerfect_diff.png");
 
             promise.set_value();
         });

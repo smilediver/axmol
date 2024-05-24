@@ -22,7 +22,9 @@
                 "name": "gfx-tests debug/ninja (lldb)",
                 "type": "lldb",
                 "request": "launch",
-                "program": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests/gfx-tests.exe",
+                "osx": {
+                    "program": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests/gfx-tests.app/Contents/MacOS/gfx-tests",
+                },
                 "args": [],
                 "cwd": "${workspaceFolder}/build/gfx-tests-debug/bin/gfx-tests",
                 "preLaunchTask": "build gfx-tests debug/ninja",
