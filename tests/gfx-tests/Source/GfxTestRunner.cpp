@@ -22,14 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
+#include "platform/PlatformConfig.h"
 #if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
     #include <android/log.h>
     #include <sstream>
 #endif
 #include <string>
 #include <doctest.h>
+
 #include "base/Director.h"
+#include "base/EventDispatcher.h"
 #include "base/RefPtr.h"
+#include "base/Scheduler.h"
+#include "base/Utils.h"
+#include "platform/FileUtils.h"
+#include "platform/Image.h"
+#include "renderer/Renderer.h"
+#include "renderer/backend/PixelBufferDescriptor.h"
+
 #include "GfxTestRunner.h"
 #include "Test.h"
 
@@ -106,6 +116,10 @@ void GfxTestRunner::startTests() {
             auto out = AndroidLogStream();
             auto stream = std::ostream(&out);
             context.setCout(&stream);
+        #endif
+
+        #if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID || AX_TARGET_PLATFORM == AX_PLATFORM_IOS
+            context.setOption("no-colors", true);
         #endif
 
         // TODO: pass in command line arguments

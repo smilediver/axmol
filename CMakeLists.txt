@@ -62,8 +62,8 @@ if(AX_BUILD_TESTS)
         set_target_properties(${target_name} PROPERTIES FOLDER "Apps")
     endmacro()
 
-	# add cpp tests default
     add_test_target(cpp-tests ${_AX_ROOT}/tests/cpp-tests)
+    add_test_target(gfx-tests ${_AX_ROOT}/tests/gfx-tests)
 
     if(LINUX OR MACOSX OR WINDOWS)
         add_test_target(unit-tests ${_AX_ROOT}/tests/unit-tests)

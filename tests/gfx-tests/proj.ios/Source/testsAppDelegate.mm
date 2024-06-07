@@ -41,24 +41,29 @@ static AppDelegate s_sharedApplication;
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-
     ax::Application* app = ax::Application::getInstance();
     app->initGLContextAttrs();
     ax::GLViewImpl::convertAttrs();
 
     // Override point for customization after application launch.
 
+    auto rect = CGRectMake(0, 0, 480, 270);
+
     // Add the view controller's view to the window and display.
-    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    window = [[UIWindow alloc] initWithFrame:rect];
 
     // Init the EAGLView
-    EAGLView* eaglView = [EAGLView viewWithFrame:[window bounds]
-                                         pixelFormat:(NSString*)ax::GLViewImpl::_pixelFormat
-                                         depthFormat:ax::GLViewImpl::_depthFormat
-                                  preserveBackbuffer:NO
-                                          sharegroup:nil
-                                       multiSampling:ax::GLViewImpl::_multisamplingCount > 0 ? YES : NO
-                                     numberOfSamples:ax::GLViewImpl::_multisamplingCount];
+    EAGLView* eaglView =
+        [EAGLView
+        viewWithFrame:rect
+        pixelFormat:(NSString*)ax::GLViewImpl::_pixelFormat
+        depthFormat:ax::GLViewImpl::_depthFormat
+        preserveBackbuffer:NO
+        sharegroup:nil
+        multiSampling:ax::GLViewImpl::_multisamplingCount > 0 ? YES : NO
+        numberOfSamples:ax::GLViewImpl::_multisamplingCount];
+
+    eaglView.contentScaleFactor = 1.0f;
 
 #if !defined(AX_TARGET_OS_TVOS)
     [eaglView setMultipleTouchEnabled:YES];

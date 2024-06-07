@@ -23,8 +23,17 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include <string>
-#include "GfxTestRunner.h"
 
+#include "2d/FontFreeType.h"
+#include "platform/FileUtils.h"
+#include "platform/GLView.h"
+#include "platform/PlatformConfig.h"
+
+#if AX_TARGET_PLATFORM == AX_PLATFORM_IOS
+    #include "platform/ios/GLViewImpl-ios.h"
+#endif
+
+#include "GfxTestRunner.h"
 #include "AppDelegate.h"
 
 
