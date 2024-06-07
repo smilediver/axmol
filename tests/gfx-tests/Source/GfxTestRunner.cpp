@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
+#if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+    #include <android/log.h>
+    #include <sstream>
+#endif
 #include <string>
 #include <doctest.h>
 #include "base/Director.h"
@@ -69,10 +73,42 @@ void GfxTestRunner::setupTesting() {
 }
 
 
+#if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+    // Redirect stdout to logcat
+    class AndroidLogStream: public std::stringbuf
+    {
+    public:
+        virtual int sync() {
+            auto data = str();
+            auto lines = std::string_view(data);
+            auto newLine = std::string_view::size_type(0);
+
+            // Print each line separately
+            while ((newLine = lines.find('\n')) != std::string_view::npos) {
+                __android_log_print(ANDROID_LOG_INFO, "gfx-tests", "%.*s", int(newLine), lines.data());
+                lines.remove_prefix(newLine + 1);
+            }
+
+            str(std::string(lines));
+
+            return 0;
+        }
+    };
+#endif
+
+
 void GfxTestRunner::startTests() {
     std::thread([] {
         doctest::Context context;
 
+        #if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+            // On Android, redirect stdout to logcat
+            auto out = AndroidLogStream();
+            auto stream = std::ostream(&out);
+            context.setCout(&stream);
+        #endif
+
+        // TODO: pass in command line arguments
         context.applyCommandLine(0, 0);
 
         //context.addFilter("test-case-exclude", "*math*"); // exclude test cases with "math" in their name
@@ -80,8 +116,16 @@ void GfxTestRunner::startTests() {
         context.setOption("no-breaks", true);             // don't break in the debugger when assertions fail
 
         int res = context.run(); // run
-        exit(res);
-        //return res;
+
+        #if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+            // Make sure all output is printed before exiting
+            stream.flush();
+            out.pubsync();
+        #endif
+
+        Director::getInstance()->getScheduler()->runOnAxmolThread([res] {
+            exit(res);
+        });
     }).detach();
 }
 

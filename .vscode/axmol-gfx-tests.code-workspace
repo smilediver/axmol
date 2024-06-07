@@ -119,7 +119,9 @@
         ]
     },
     "settings": {
+        "C_Cpp.autoAddFileAssociations": false,
         "C_Cpp.default.compileCommands": "${workspaceFolder}/build/gfx-tests-debug/compile_commands.json",
+
         "files.associations": {
             "**/usr/include/c++/**": "cpp",
             "**/MSVC/**/include/**": "cpp",

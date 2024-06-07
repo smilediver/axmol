@@ -33,7 +33,7 @@ USING_NS_AX;
 static const Vec2 gTestViewSize = Vec2(480, 270);
 
 
-AppDelegate::AppDelegate()
+void setupFileUtils()
 {
     auto fu = FileUtils::getInstance();
 
@@ -66,6 +66,8 @@ void AppDelegate::initGLContextAttrs()
 
 bool AppDelegate::applicationDidFinishLaunching()
 {
+    setupFileUtils();
+
     // Enable logging output colored text style and prefix timestamp
     ax::setLogFmtFlag(ax::LogFmtFlag::Full);
 

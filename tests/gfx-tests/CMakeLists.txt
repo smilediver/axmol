@@ -42,8 +42,8 @@ set(GAME_SOURCE
 )
 
 set(GAME_INC_DIRS
-  "${CMAKE_CURRENT_SOURCE_DIR}/Source"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../unit-tests/Source"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../unit-tests/Source"
 )
 
 set(content_folder
@@ -56,32 +56,17 @@ elseif(WINDOWS)
 endif()
 
 if(ANDROID)
-    list(APPEND GAME_HEADER
-         Source/JNITest/JNITest.h
-         )
-    list(APPEND GAME_SOURCE
-         Source/JNITest/JNITest.cpp
-         proj.android/app/jni/main.cpp
-         )
+    list(APPEND GAME_SOURCE proj.android/app/jni/main.cpp)
 elseif(LINUX)
-    list(APPEND GAME_SOURCE
-         proj.linux/main.cpp
-         )
+    list(APPEND GAME_SOURCE proj.linux/main.cpp)
     list(APPEND GAME_SOURCE ${common_content_files})
 elseif(WASM)
-    list(APPEND GAME_SOURCE
-         proj.wasm/main.cpp
-         )
+    list(APPEND GAME_SOURCE proj.wasm/main.cpp)
     list(APPEND GAME_SOURCE ${common_content_files})
 elseif(WINDOWS)
     if(NOT WINRT)
-        list(APPEND GAME_HEADER
-             proj.win32/main.h
-             )
-        list(APPEND GAME_SOURCE
-             proj.win32/main.cpp
-             ${common_content_files}
-             )
+        list(APPEND GAME_HEADER proj.win32/main.h)
+        list(APPEND GAME_SOURCE proj.win32/main.cpp ${common_content_files})
     else()
         ax_setup_winrt_sources()
     endif()
@@ -89,42 +74,42 @@ elseif(WINDOWS)
 elseif(APPLE)
     if(IOS)
         list(APPEND GAME_HEADER
-             proj.ios/Source/testsAppDelegate.h
-             proj.ios/Source/RootViewController.h
-             )
+            proj.ios/Source/testsAppDelegate.h
+            proj.ios/Source/RootViewController.h
+        )
 
         if (TVOS)
             set(APP_UI_RES
                 proj.ios/LaunchScreenBackground.png
                 proj.ios/targets/tvos/LaunchScreen.storyboard
                 proj.ios/targets/tvos/Images.xcassets
-                )
+            )
         else()
             set(APP_UI_RES
                 proj.ios/LaunchScreenBackground.png
                 proj.ios/targets/ios/LaunchScreen.storyboard
                 proj.ios/targets/ios/Images.xcassets
-                )
+            )
         endif()
 
         list(APPEND GAME_SOURCE
-             proj.ios/main.m
-             proj.ios/Source/testsAppDelegate.mm
-             proj.ios/Source/RootViewController.mm
-             proj.ios/Prefix.pch
-             ${APP_UI_RES}
-             )
+            proj.ios/main.m
+            proj.ios/Source/testsAppDelegate.mm
+            proj.ios/Source/RootViewController.mm
+            proj.ios/Prefix.pch
+            ${APP_UI_RES}
+        )
     elseif(MACOSX)
         set(APP_UI_RES
             proj.mac/Icon.icns
             proj.mac/Info.plist
             proj.mac/Prefix.pch
             proj.mac/en.lproj/InfoPlist.strings
-            )
+        )
         list(APPEND GAME_SOURCE
              proj.mac/main.cpp
              ${APP_UI_RES}
-             )
+        )
     endif()
     list(APPEND GAME_SOURCE ${common_content_files})
 endif()
@@ -133,7 +118,7 @@ endif()
 set(all_code_files
     ${GAME_HEADER}
     ${GAME_SOURCE}
-    )
+)
 
 if(NOT ANDROID)
     add_executable(${APP_NAME} ${all_code_files})
