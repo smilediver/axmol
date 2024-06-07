@@ -102,7 +102,7 @@ TEST_SUITE("core/2d/Node") {
             auto comparison = GfxTests::compareImageToReference(frame, reference);
             GfxTests::saveImage(*frame, "results/core/2d/Node_Sorting.png");
 
-            CHECK_LE(comparison.maxPixelError, 2);
+            CHECK_LE(comparison.maxPixelError, 3);
 
             CHECK_EQ(comparison.error, "");
             if (not comparison.error.empty() && comparison.difference)

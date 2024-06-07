@@ -27,6 +27,7 @@ package org.axmol.gfx_tests;
 import android.os.Bundle;
 
 import org.axmol.lib.AxmolActivity;
+import org.axmol.lib.AxmolGLSurfaceView;
 import org.axmol.lib.SharedLoader;
 
 public class AppActivity extends AxmolActivity {
@@ -34,7 +35,7 @@ public class AppActivity extends AxmolActivity {
         // DNT remove, some android simulator require explicit load shared libraries, otherwise will crash
         SharedLoader.load();
     }
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.setEnableVirtualButton(false);
@@ -48,5 +49,9 @@ public class AppActivity extends AxmolActivity {
             return;
         }
         // DO OTHER INITIALIZATION BELOW
+
+        AxmolGLSurfaceView view = getGLSurfaceView();
+        view.getLayoutParams().width = 480;
+        view.getLayoutParams().height = 270;
     }
 }
