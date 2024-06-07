@@ -500,7 +500,7 @@ using ticks_t = timer_large_integer::type;
     // used to avoid locks for the debug output
     // TODO: figure out if this is indeed necessary/correct - seems like either there still
     // could be a race or that there wouldn't be a race even if using the context directly
-    DOCTEST_THREAD_LOCAL bool g_no_colors;
+    bool g_no_colors;
 
 #endif // DOCTEST_CONFIG_DISABLE
 } // namespace detail
