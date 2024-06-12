@@ -46,8 +46,9 @@ public class AxmolRenderer implements GLSurfaceView.Renderer {
     private long mLastTickInNanoSeconds;
     private int mScreenWidth;
     private int mScreenHeight;
-    private boolean mNativeInitCompleted = false;
-    private boolean mIsPaused = false;
+
+    private static boolean gNativeInitCompleted = false;
+    private static boolean gIsPaused = false;
 
     // ===========================================================
     // Constructors
@@ -75,11 +76,11 @@ public class AxmolRenderer implements GLSurfaceView.Renderer {
         AxmolRenderer.nativeInit(this.mScreenWidth, this.mScreenHeight);
         this.mLastTickInNanoSeconds = System.nanoTime();
 
-        if (mNativeInitCompleted) {
+        if (gNativeInitCompleted) {
             // This must be from an OpenGL context loss
             nativeOnContextLost();
         } else {
-            mNativeInitCompleted = true;
+            gNativeInitCompleted = true;
         }
     }
 
@@ -161,17 +162,17 @@ public class AxmolRenderer implements GLSurfaceView.Renderer {
          * onSurfaceCreated is invoked. Can not invoke any
          * native method before onSurfaceCreated is invoked
          */
-        if (!mNativeInitCompleted)
+        if (!gNativeInitCompleted)
             return;
 
         AxmolRenderer.nativeOnPause();
-        mIsPaused = true;
+        gIsPaused = true;
     }
 
     public void handleOnResume() {
-        if (mIsPaused) {
+        if (gIsPaused) {
             AxmolRenderer.nativeOnResume();
-            mIsPaused = false;
+            gIsPaused = false;
         }
     }
 
