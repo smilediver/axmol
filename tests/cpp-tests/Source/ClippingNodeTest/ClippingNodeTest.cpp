@@ -608,7 +608,7 @@ void RawStencilBufferTest::initCommands()
     }
 }
 
-void RawStencilBufferTest::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void RawStencilBufferTest::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     auto winPoint  = Vec2(Director::getInstance()->getWinSize());
     auto planeSize = winPoint * (1.0 / _planeCount);
@@ -633,7 +633,7 @@ void RawStencilBufferTest::draw(Renderer* renderer, const Mat4& transform, uint3
         director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
         _modelViewTransform = this->transform(transform);
-        _spritesStencil.at(i)->visit(renderer, _modelViewTransform, flags);
+        _spritesStencil.at(i)->visit(rctx, rctx1);
         director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
         renderer->addCommand(&_renderCmds[cmdIndex]);
@@ -641,7 +641,7 @@ void RawStencilBufferTest::draw(Renderer* renderer, const Mat4& transform, uint3
 
         director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
         _modelViewTransform = this->transform(transform);
-        _sprites.at(i)->visit(renderer, _modelViewTransform, flags);
+        _sprites.at(i)->visit(rctx, rctx1);
         director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
     }
 
@@ -990,7 +990,7 @@ void ClippingNodePerformanceTest::setup()
     countLabel->enableOutline(Color4B(0, 0, 0, 255), 2);
     countLabel->setPosition(Vec2(s.width / 2, s.height - 120));
     addChild(countLabel, 1);
-    
+
     auto addClippingNode = [=] (int count) -> void {
         for (int i = 0; i < count; i++) {
             Vec2 pos = Vec2(random(0, (int) s.width), random(0, (int) s.height));
@@ -1004,12 +1004,12 @@ void ClippingNodePerformanceTest::setup()
             auto spriteA = Sprite::create("Images/grossini.png");
             clipper->addChild(spriteA);
         }
-        
+
         _totalCount += count;
         countLabel->setString(std::to_string(_totalCount));
     };
     addClippingNode(100);
-    
+
     MenuItemFont::setFontName("fonts/arial.ttf");
     MenuItemFont::setFontSize(65);
     auto increase = MenuItemFont::create(" + ", [=] (Object*) -> void {

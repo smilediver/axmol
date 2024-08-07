@@ -90,19 +90,19 @@ void ClippingRectangleNode::onAfterVisitScissor()
         _director->getRenderer()->setScissorTest(_oldScissorTest);
 }
 
-void ClippingRectangleNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void ClippingRectangleNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    auto beforeVisitCmdScissor = renderer->nextCallbackCommand();
+    auto beforeVisitCmdScissor = rctx.renderer->nextCallbackCommand();
     beforeVisitCmdScissor->init(_globalZOrder);
     beforeVisitCmdScissor->func = AX_CALLBACK_0(ClippingRectangleNode::onBeforeVisitScissor, this);
-    renderer->addCommand(beforeVisitCmdScissor);
+    rctx.renderer->addCommand(beforeVisitCmdScissor);
 
-    Node::visit(renderer, parentTransform, parentFlags);
+    Node::visit(rctx, rctx1);
 
-    auto afterVisitCmdScissor = renderer->nextCallbackCommand();
+    auto afterVisitCmdScissor = rctx.renderer->nextCallbackCommand();
     afterVisitCmdScissor->init(_globalZOrder);
     afterVisitCmdScissor->func = AX_CALLBACK_0(ClippingRectangleNode::onAfterVisitScissor, this);
-    renderer->addCommand(afterVisitCmdScissor);
+    rctx.renderer->addCommand(afterVisitCmdScissor);
 }
 
 NS_AX_END

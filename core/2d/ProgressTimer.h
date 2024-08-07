@@ -150,7 +150,7 @@ public:
     Vec2 getBarChangeRate() const { return _barChangeRate; }
 
     // Overrides
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
     virtual void setAnchorPoint(const Vec2& anchorPoint) override;
     virtual void setColor(const Color3B& color) override;
     virtual const Color3B& getColor() const override;

@@ -93,7 +93,7 @@ void NodeGrid::onGridEndDraw()
     }
 }
 
-void NodeGrid::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void NodeGrid::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -101,16 +101,9 @@ void NodeGrid::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t p
         return;
     }
 
-    bool dirty = (parentFlags & FLAGS_TRANSFORM_DIRTY) || _transformUpdated;
-    if (dirty)
-        _modelViewTransform = this->transform(parentTransform);
+    // TODO: rctx optimize
+    _modelViewTransform = this->transform(getParentWorldTransform());
     _transformUpdated = false;
-
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
 
     Director::Projection beforeProjectionType = Director::Projection::DEFAULT;
     if (_nodeGrid && _nodeGrid->isActive())
@@ -123,7 +116,7 @@ void NodeGrid::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t p
 
     if (_gridTarget)
     {
-        _gridTarget->visit(renderer, _modelViewTransform, dirty);
+        _gridTarget->visit(rctx, rctx1);
     }
 
     int i                = 0;
@@ -138,22 +131,22 @@ void NodeGrid::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t p
             auto node = _children.at(i);
 
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, dirty);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
         // self draw,currently we have nothing to draw on NodeGrid, so there is no need to add render command
         if (visibleByCamera)
-            this->draw(renderer, _modelViewTransform, dirty);
+            this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
         {
-            (*it)->visit(renderer, _modelViewTransform, dirty);
+            (*it)->visit(rctx, rctx1);
         }
     }
     else if (visibleByCamera)
     {
-        this->draw(renderer, _modelViewTransform, dirty);
+        this->draw(rctx, rctx1);
     }
 
     // FIX ME: Why need to set _orderOfArrival to 0??
@@ -167,8 +160,6 @@ void NodeGrid::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t p
     }
 
     onGridEndDraw();
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void NodeGrid::setGrid(GridBase* grid)

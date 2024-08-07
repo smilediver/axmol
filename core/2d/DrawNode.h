@@ -152,7 +152,7 @@ public:
                     float scaleX,
                     float scaleY,
                     const Color4B& color,
-                    float threshold = 500);  // 500 should "simulate/save" the backwards compatibility  
+                    float threshold = 500);  // 500 should "simulate/save" the backwards compatibility
 
     /** Draws a circle given the center, radius and number of segments.
      *
@@ -320,7 +320,7 @@ public:
      * @param scaleX The scale value in x.
      * @param scaleY The scale value in y.
      * @param color The solid circle color.
-     * @param DrawMode The draw mode 
+     * @param DrawMode The draw mode
      * @js NA
      */
     void drawPie(const Vec2& center,
@@ -388,9 +388,9 @@ public:
     void setBlendFunc(const BlendFunc& blendFunc);
 
     // Overrides
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     void setLineWidth(float lineWidth);
 
@@ -426,7 +426,7 @@ protected:
     void setVertexLayout(CustomCommand& cmd);
 
     void updateBlendState(CustomCommand& cmd);
-    void updateUniforms(const Mat4& transform, CustomCommand& cmd);
+    void updateUniforms(const Mat4& viewProjectionTransform, const Mat4& transform, CustomCommand& cmd);
 
     int _bufferCapacityTriangle  = 0;
     int _bufferCountTriangle     = 0;

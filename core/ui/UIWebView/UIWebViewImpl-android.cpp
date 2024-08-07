@@ -332,7 +332,7 @@ void WebViewImpl::onJsCallback(const int viewTag, std::string_view message)
     }
 }
 
-void WebViewImpl::draw(ax::Renderer* renderer, ax::Mat4 const& transform, uint32_t flags)
+void WebViewImpl::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     if (flags & ax::Node::FLAGS_TRANSFORM_DIRTY)
     {

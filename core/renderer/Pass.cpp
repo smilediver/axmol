@@ -199,6 +199,8 @@ void Pass::draw(MeshCommand* meshCommand,
 
 void Pass::updateMVPUniform(const Mat4& modelView)
 {
+    assert(false);
+    /* TODO: rctx matrix
     auto& matrixP = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
     auto mvp      = matrixP * modelView;
     _programState->setUniform(_locMVPMatrix, mvp.m, sizeof(mvp.m));
@@ -217,6 +219,7 @@ void Pass::updateMVPUniform(const Mat4& modelView)
         auto normalMatrix = utils::getNormalMat3OfMat4(modelView);
         _programState->setUniform(_locNormalMatrix, &normalMatrix, sizeof(normalMatrix));
     }
+    */
 }
 
 void Pass::onBeforeVisitCmd(MeshCommand* command)

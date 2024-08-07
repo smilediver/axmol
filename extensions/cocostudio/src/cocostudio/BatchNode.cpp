@@ -85,7 +85,7 @@ void BatchNode::removeChild(Node* child, bool cleanup)
     Node::removeChild(child, cleanup);
 }
 
-void BatchNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void BatchNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -93,7 +93,7 @@ void BatchNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t 
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
     if (isVisitableByVisitingCamera())
     {
@@ -105,7 +105,7 @@ void BatchNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t 
         director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
 
         sortAllChildren();
-        draw(renderer, _modelViewTransform, flags);
+        draw(rctx, rctx1);
 
         // FIX ME: Why need to set _orderOfArrival to 0??
         // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920
@@ -115,7 +115,7 @@ void BatchNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t 
     }
 }
 
-void BatchNode::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void BatchNode::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_children.empty())
     {
@@ -136,14 +136,14 @@ void BatchNode::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
                 pushed = true;
             }
 
-            armature->visit(renderer, transform, flags);
+            armature->visit(rctx, rctx1);
         }
         else
         {
             renderer->popGroup();
             pushed = false;
 
-            ((Node*)object)->visit(renderer, transform, flags);
+            ((Node*)object)->visit(rctx, rctx1);
         }
     }
 }

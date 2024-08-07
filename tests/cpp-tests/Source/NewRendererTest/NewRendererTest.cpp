@@ -195,7 +195,7 @@ class SpriteInGroupCommand : public Sprite
 public:
     static SpriteInGroupCommand* create(std::string_view filename);
 
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 };
 
 SpriteInGroupCommand* SpriteInGroupCommand::create(std::string_view filename)
@@ -206,14 +206,14 @@ SpriteInGroupCommand* SpriteInGroupCommand::create(std::string_view filename)
     return sprite;
 }
 
-void SpriteInGroupCommand::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void SpriteInGroupCommand::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     AXASSERT(renderer, "Render is null");
     auto * spriteWrapperCommand = renderer->getNextGroupCommand();
     spriteWrapperCommand->init(_globalZOrder);
     renderer->addCommand(spriteWrapperCommand);
     renderer->pushGroup(spriteWrapperCommand->getRenderQueueID());
-    Sprite::draw(renderer, transform, flags);
+    Sprite::draw(rctx, rctx1);
     renderer->popGroup();
 }
 

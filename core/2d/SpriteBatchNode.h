@@ -6,7 +6,7 @@ Copyright (c) 2011      Zynga Inc.
 Copyright (c) 2013-2016 Chukong Technologies Inc.
 Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
 https://axmol.dev/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -192,7 +192,7 @@ public:
     /**
      * @js NA
      */
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     using Node::addChild;
     virtual void addChild(Node* child, int zOrder, int tag) override;
@@ -208,7 +208,7 @@ public:
     /**
      * @js NA
      */
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
     /**
      * @js NA
      */

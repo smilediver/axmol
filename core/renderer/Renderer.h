@@ -64,6 +64,20 @@ class GroupCommand;
 class CallbackCommand;
 struct PipelineDescriptor;
 class Texture2D;
+class Renderer;
+
+
+struct RenderContext
+{
+    Renderer*   renderer;
+    Mat4        viewProjectionTransform;
+    Mat4        viewTransform;
+    Mat4        viewInverseTransform;
+};
+
+
+struct RenderArg1{}; // Dummy arg for fast search and replace prototyping
+
 
 /** Class that knows how to sort `RenderCommand` objects.
  Since the commands that have `z == 0` are "pushed back" in

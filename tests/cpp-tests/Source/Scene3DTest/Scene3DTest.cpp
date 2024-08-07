@@ -39,7 +39,7 @@ class SkeletonAnimationCullingFix : public SkeletonAnimation
 public:
     SkeletonAnimationCullingFix() : SkeletonAnimation() {}
 
-    virtual void draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t transformFlags) override
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override
     {
         glDisable(GL_CULL_FACE);
         SkeletonAnimation::draw(renderer, transform, transformFlags);

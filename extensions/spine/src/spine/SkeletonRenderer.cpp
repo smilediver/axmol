@@ -520,13 +520,6 @@ namespace spine {
 
 
 	void SkeletonRenderer::drawDebug(Renderer *renderer, const Mat4 &transform, uint32_t transformFlags) {
-
-#if !defined(USE_MATRIX_STACK_PROJECTION_ONLY)
-		Director *director = Director::getInstance();
-		director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-		director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
-#endif
-
 		DrawNode *drawNode = DrawNode::create();
 		drawNode->setGlobalZOrder(getGlobalZOrder());
 
@@ -618,9 +611,6 @@ namespace spine {
 		}
 
 		drawNode->draw(renderer, transform, transformFlags);
-#if !defined(USE_MATRIX_STACK_PROJECTION_ONLY)
-		director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-#endif
 	}
 
 	axmol::Rect SkeletonRenderer::getBoundingBox() const {

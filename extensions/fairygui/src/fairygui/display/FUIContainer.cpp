@@ -375,7 +375,7 @@ void FUIContainer::visit(ax::Renderer * renderer, const ax::Mat4 & parentTransfo
         if (!_visible || _children.empty())
             return;
 
-        uint32_t flags = processParentFlags(parentTransform, parentFlags);
+        processParentFlags();
 
         // IMPORTANT:
         // To ease the migration to v3.0, we still support the Mat4 stack,
@@ -431,7 +431,7 @@ void FUIContainer::visit(ax::Renderer * renderer, const ax::Mat4 & parentTransfo
 #endif
 
         }
-        _stencilClippingSupport->_stencil->visit(renderer, _modelViewTransform, flags);
+        _stencilClippingSupport->_stencil->visit(rctx, rctx1);
 
         auto afterDrawStencilCmd = renderer->nextCallbackCommand();
         afterDrawStencilCmd->init(_globalZOrder);
@@ -450,20 +450,20 @@ void FUIContainer::visit(ax::Renderer * renderer, const ax::Mat4 & parentTransfo
                 auto node = _children.at(i);
 
                 if (node && node->getLocalZOrder() < 0)
-                    node->visit(renderer, _modelViewTransform, flags);
+                    node->visit(rctx, rctx1);
                 else
                     break;
             }
             // self draw
             if (visibleByCamera)
-                this->draw(renderer, _modelViewTransform, flags);
+                this->draw(rctx, rctx1);
 
             for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-                (*it)->visit(renderer, _modelViewTransform, flags);
+                (*it)->visit(rctx, rctx1);
         }
         else if (visibleByCamera)
         {
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
         }
 
         auto afterVisitCmd = renderer->nextCallbackCommand();
@@ -499,7 +499,7 @@ void FUIContainer::visit(ax::Renderer * renderer, const ax::Mat4 & parentTransfo
         beforeVisitCmdScissor->func = AX_CALLBACK_0(FUIContainer::onBeforeVisitScissor, this);
         renderer->addCommand(beforeVisitCmdScissor);
 
-        Node::visit(renderer, parentTransform, parentFlags);
+        Node::visit(rctx, rctx1);
 
         auto afterVisitCmdScissor = renderer->nextCallbackCommand();
         afterVisitCmdScissor->init(_globalZOrder);
@@ -510,7 +510,7 @@ void FUIContainer::visit(ax::Renderer * renderer, const ax::Mat4 & parentTransfo
 #endif
     }
     else
-        Node::visit(renderer, parentTransform, parentFlags);
+        Node::visit(rctx, rctx1);
 }
 
 void FUIContainer::setGlobalZOrder(float globalZOrder)

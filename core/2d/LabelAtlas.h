@@ -108,7 +108,7 @@ public:
     virtual std::string getDescription() const override;
 
 #if AX_LABELATLAS_DEBUG_DRAW
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 #endif
 
     LabelAtlas()

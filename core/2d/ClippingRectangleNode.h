@@ -81,8 +81,8 @@ public:
     */
     void setClippingEnabled(bool enabled) { _clippingEnabled = enabled; }
 
-    // virtual void draw(Renderer* renderer, const Mat4 &transform, uint32_t flags) override;
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    // virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
 protected:
     ClippingRectangleNode() = default;

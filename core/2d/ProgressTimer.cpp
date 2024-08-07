@@ -232,15 +232,15 @@ void ProgressTimer::updateDisplayedOpacity(uint8_t parentOpacity)
     Node::updateDisplayedOpacity(parentOpacity);
 
     _displayedOpacity = _realOpacity * parentOpacity / 0xFF;
-    
+
     _sprite->setOpacity(_displayedOpacity);
     updateColor();
     updateProgress();
-    
+
     if (_cascadeOpacityEnabled)
     {
         _sprite->updateDisplayedOpacity(_displayedOpacity);
-        
+
         for(const auto& child : _children)
         {
             child->updateDisplayedOpacity(_displayedOpacity);
@@ -306,10 +306,10 @@ const Color3B& ProgressTimer::getColor() const
 void ProgressTimer::setOpacity(uint8_t opacity)
 {
     _displayedOpacity = _realOpacity = opacity;
-    
+
     _sprite->setOpacity(_displayedOpacity);
     updateColor();
-    
+
     updateCascadeOpacity();
 }
 
@@ -622,19 +622,21 @@ Vec2 ProgressTimer::boundaryTexCoord(char index)
             return Vec2((kProgressTextureCoords >> ((index << 1) + 1)) & 1,
                         (kProgressTextureCoords >> (index << 1)) & 1);
     }
-    
+
     return Vec2::ZERO;
 }
 
-void ProgressTimer::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void ProgressTimer::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_vertexData.empty() || !_sprite)
         return;
 
-    const ax::Mat4& projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Mat4 finalMat                      = projectionMat * transform;
+    // TODO: rctx test
+    Mat4 finalMat = rctx.viewProjectionTransform * _modelViewTransform;
     _programState->setUniform(_locMVP1, finalMat.m, sizeof(finalMat.m));
     _programState->setTexture(_locTex1, 0, _sprite->getTexture()->getBackendTexture());
+
+    auto renderer = rctx.renderer;
 
     if (_type == Type::BAR)
     {

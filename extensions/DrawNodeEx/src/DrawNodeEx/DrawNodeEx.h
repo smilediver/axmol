@@ -84,7 +84,7 @@ public:
     {
         v0,  // DrawNode cocos2dx/axmol 1.0
         v1,  // DrawNode 1.0
-        v2,  
+        v2,
         v3,
         v4,
     };
@@ -572,9 +572,9 @@ public:
     void setBlendFunc(const ax::BlendFunc& blendFunc);
 
     // Overrides
-    virtual void draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags) override;
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override;
 
-    virtual void visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override;
 
     void setLineWidth(float lineWidth);
     // Get CocosStudio guide lines width.

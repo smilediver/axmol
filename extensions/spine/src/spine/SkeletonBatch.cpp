@@ -96,7 +96,7 @@ namespace spine {
 	#endif
 			AX_SAFE_RELEASE(currentState);
 			currentState = programState->clone();
-		
+
 			command->_locMVP     = currentState->getUniformLocation(backend::UNIFORM_NAME_MVP_MATRIX);
 	        command->_locTexture = currentState->getUniformLocation(backend::UNIFORM_NAME_TEXTURE);
 		}
@@ -154,7 +154,7 @@ namespace spine {
 	}
 
 
-	axmol::TrianglesCommand *SkeletonBatch::addCommand(axmol::Renderer *renderer, float globalOrder, axmol::Texture2D *texture, backend::ProgramState *programState, axmol::BlendFunc blendType, const axmol::TrianglesCommand::Triangles &triangles, const axmol::Mat4 &mv, uint32_t flags) {
+	axmol::TrianglesCommand *SkeletonBatch::addCommand(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) {
 		SkeletonCommand *command = nextFreeCommand();
 		const axmol::Mat4 &projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 

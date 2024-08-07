@@ -1121,9 +1121,9 @@ void MediaPlayer::setStyle(StyleType style)
     _styleType = style;
 }
 
-void MediaPlayer::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void MediaPlayer::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    ax::ui::Widget::draw(renderer, transform, flags);
+    ax::ui::Widget::draw(rctx, rctx1);
 
     auto pvd     = reinterpret_cast<PrivateVideoDescriptor*>(_videoContext);
     auto vrender = pvd->_vrender;
@@ -1135,7 +1135,9 @@ void MediaPlayer::draw(Renderer* renderer, const Mat4& transform, uint32_t flags
     {  // render 1 video sample if avaiable
         engine->transferVideoFrame();
     }
-    if (pvd->_scaleDirty || (flags & FLAGS_TRANSFORM_DIRTY))
+    // TODO: rctx flags
+    // if (pvd->_scaleDirty || (flags & FLAGS_TRANSFORM_DIRTY))
+    if (pvd->_scaleDirty)
         pvd->rescaleTo(this);
 
 #    if AX_VIDEOPLAYER_DEBUG_DRAW

@@ -155,7 +155,6 @@ bool Director::init()
     _eventResetDirector = new EventCustom(EVENT_RESET);
     // init TextureCache
     initTextureCache();
-    initMatrixStack();
 
     _renderer = new Renderer;
 
@@ -330,8 +329,6 @@ void Director::drawScene()
         setNextScene();
     }
 
-    pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-
     if (_runningScene)
     {
 #if (defined(AX_ENABLE_PHYSICS) || (defined(AX_ENABLE_3D_PHYSICS) && AX_ENABLE_BULLET_INTEGRATION) || \
@@ -356,7 +353,7 @@ void Director::drawScene()
     // draw the notifications node
     if (_notificationNode)
     {
-        _notificationNode->visit(_renderer, Mat4::IDENTITY, 0);
+        _notificationNode->visit();
     }
 
     updateFrameRate();
@@ -375,8 +372,6 @@ void Director::drawScene()
     events.afterDrawStart();
     _eventDispatcher->dispatchEvent(_eventAfterDraw);
     events.afterDrawEnd();
-
-    popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
     _totalFrames++;
 
@@ -501,158 +496,6 @@ void Director::setNextDeltaTimeZero(bool nextDeltaTimeZero)
     _nextDeltaTimeZero = nextDeltaTimeZero;
 }
 
-//
-// FIXME TODO
-// Matrix code MUST NOT be part of the Director
-// MUST BE moved outside.
-// Why the Director must have this code ?
-//
-void Director::initMatrixStack()
-{
-    while (!_modelViewMatrixStack.empty())
-    {
-        _modelViewMatrixStack.pop();
-    }
-
-    while (!_projectionMatrixStack.empty())
-    {
-        _projectionMatrixStack.pop();
-    }
-
-    while (!_textureMatrixStack.empty())
-    {
-        _textureMatrixStack.pop();
-    }
-
-    _modelViewMatrixStack.push(Mat4::IDENTITY);
-    _projectionMatrixStack.push(Mat4::IDENTITY);
-    _textureMatrixStack.push(Mat4::IDENTITY);
-}
-
-void Director::resetMatrixStack()
-{
-    initMatrixStack();
-}
-
-void Director::popMatrix(MATRIX_STACK_TYPE type)
-{
-    if (MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW == type)
-    {
-        _modelViewMatrixStack.pop();
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION == type)
-    {
-        _projectionMatrixStack.pop();
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_TEXTURE == type)
-    {
-        _textureMatrixStack.pop();
-    }
-    else
-    {
-        AXASSERT(false, "unknown matrix stack type");
-    }
-}
-
-void Director::loadIdentityMatrix(MATRIX_STACK_TYPE type)
-{
-    if (MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW == type)
-    {
-        _modelViewMatrixStack.top() = Mat4::IDENTITY;
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION == type)
-    {
-        _projectionMatrixStack.top() = Mat4::IDENTITY;
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_TEXTURE == type)
-    {
-        _textureMatrixStack.top() = Mat4::IDENTITY;
-    }
-    else
-    {
-        AXASSERT(false, "unknown matrix stack type");
-    }
-}
-
-void Director::loadMatrix(MATRIX_STACK_TYPE type, const Mat4& mat)
-{
-    if (MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW == type)
-    {
-        _modelViewMatrixStack.top() = mat;
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION == type)
-    {
-        _projectionMatrixStack.top() = mat;
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_TEXTURE == type)
-    {
-        _textureMatrixStack.top() = mat;
-    }
-    else
-    {
-        AXASSERT(false, "unknown matrix stack type");
-    }
-}
-
-void Director::multiplyMatrix(MATRIX_STACK_TYPE type, const Mat4& mat)
-{
-    if (MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW == type)
-    {
-        _modelViewMatrixStack.top() *= mat;
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION == type)
-    {
-        _projectionMatrixStack.top() *= mat;
-    }
-    else if (MATRIX_STACK_TYPE::MATRIX_STACK_TEXTURE == type)
-    {
-        _textureMatrixStack.top() *= mat;
-    }
-    else
-    {
-        AXASSERT(false, "unknown matrix stack type");
-    }
-}
-
-void Director::pushMatrix(MATRIX_STACK_TYPE type)
-{
-    if (type == MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW)
-    {
-        _modelViewMatrixStack.push(_modelViewMatrixStack.top());
-    }
-    else if (type == MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION)
-    {
-        _projectionMatrixStack.push(_projectionMatrixStack.top());
-    }
-    else if (type == MATRIX_STACK_TYPE::MATRIX_STACK_TEXTURE)
-    {
-        _textureMatrixStack.push(_textureMatrixStack.top());
-    }
-    else
-    {
-        AXASSERT(false, "unknown matrix stack type");
-    }
-}
-
-const Mat4& Director::getMatrix(MATRIX_STACK_TYPE type) const
-{
-    if (type == MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW)
-    {
-        return _modelViewMatrixStack.top();
-    }
-    else if (type == MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION)
-    {
-        return _projectionMatrixStack.top();
-    }
-    else if (type == MATRIX_STACK_TYPE::MATRIX_STACK_TEXTURE)
-    {
-        return _textureMatrixStack.top();
-    }
-
-    AXASSERT(false, "unknown matrix stack type, will return modelview matrix instead");
-    return _modelViewMatrixStack.top();
-}
-
 void Director::setProjection(Projection projection)
 {
     Vec2 size = _winSizeInPoints;
@@ -671,8 +514,10 @@ void Director::setProjection(Projection projection)
     {
         Mat4 orthoMatrix;
         Mat4::createOrthographicOffCenter(0, size.width, 0, size.height, -1024, 1024, &orthoMatrix);
-        loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
-        loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+        // TODO: rctx matrix
+        assert(false);
+        // loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
+        // loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
         break;
     }
 
@@ -690,8 +535,10 @@ void Director::setProjection(Projection projection)
         Mat4::createLookAt(eye, center, up, &matrixLookup);
         Mat4 proj3d = matrixPerspective * matrixLookup;
 
-        loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, proj3d);
-        loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+        // TODO: rctx matrix
+        //assert(false);
+        // loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, proj3d);
+        // loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
         break;
     }
 
@@ -737,25 +584,10 @@ void Director::setClearColor(const Color4F& clearColor)
     _clearColor = clearColor;
 }
 
-static void GLToClipTransform(Mat4* transformOut)
-{
-    if (nullptr == transformOut)
-        return;
-
-    Director* director = Director::getInstance();
-    AXASSERT(nullptr != director, "Director is null when setting matrix stack");
-
-    auto& projection = director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto& modelview  = director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    *transformOut    = projection * modelview;
-}
-
+// TODO: rctx: Camera::ScreenToWorldPoint()
 Vec2 Director::convertToGL(const Vec2& uiPoint)
 {
-    Mat4 transform;
-    GLToClipTransform(&transform);
-
-    Mat4 transformInv = transform.getInversed();
+    auto& transform = Camera::getDefaultCamera()->getViewProjectionMatrix();
 
     // Calculate z=0 using -> transform*[0, 0, 0, 1]/w
     float zClip = transform.m[14] / transform.m[15];
@@ -764,16 +596,15 @@ Vec2 Director::convertToGL(const Vec2& uiPoint)
     Vec4 clipCoord(2.0f * uiPoint.x / glSize.width - 1.0f, 1.0f - 2.0f * uiPoint.y / glSize.height, zClip, 1);
 
     Vec4 glCoord;
-    // transformInv.transformPoint(clipCoord, &glCoord);
-    transformInv.transformVector(clipCoord, &glCoord);
+    transform.getInversed().transformVector(clipCoord, &glCoord);
     float factor = 1.0f / glCoord.w;
     return Vec2(glCoord.x * factor, glCoord.y * factor);
 }
 
+// TODO: rctx: Camera::WorldToScreenPoint()
 Vec2 Director::convertToUI(const Vec2& glPoint)
 {
-    Mat4 transform;
-    GLToClipTransform(&transform);
+    auto& transform = Camera::getDefaultCamera()->getViewProjectionMatrix();
 
     Vec4 clipCoord;
     // Need to calculate the zero depth from the transform.
@@ -1104,7 +935,6 @@ void Director::reset()
 
     // axmol specific data structures
     UserDefault::destroyInstance();
-    resetMatrixStack();
 
     destroyTextureCache();
 }
@@ -1310,9 +1140,9 @@ void Director::showStats()
         }
 
         const Mat4& identity = Mat4::IDENTITY;
-        _drawnVerticesLabel->visit(_renderer, identity, 0);
-        _drawnBatchesLabel->visit(_renderer, identity, 0);
-        _FPSLabel->visit(_renderer, identity, 0);
+        _drawnVerticesLabel->visit();
+        _drawnBatchesLabel->visit();
+        _FPSLabel->visit();
     }
 }
 

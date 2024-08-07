@@ -39,7 +39,7 @@ NS_AX_BEGIN
 class TextFieldTTF;
 
 /**
- * A input protocol for TextField. 
+ * A input protocol for TextField.
  * !!!DEPRECATED since axmol-2.1.3
  */
 class AX_DLL TextFieldDelegate
@@ -74,7 +74,7 @@ public:
      *@brief    If the sender doesn't want to draw, return true.
      * @js NA
      */
-    virtual bool onVisit(TextFieldTTF* sender, Renderer* renderer, const Mat4& transform, uint32_t flags);
+    virtual bool onVisit(TextFieldTTF* sender, const RenderContext& rctx, RenderArg1& rctx1);
 };
 
 /**
@@ -222,7 +222,7 @@ public:
      */
     virtual bool isSecureTextEntry() const;
 
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     virtual void update(float delta) override;
 

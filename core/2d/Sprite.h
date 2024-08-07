@@ -161,7 +161,7 @@ public:
      * @return  An autoreleased sprite object.
      */
     static Sprite* create(const ax::Data& imageData, std::string_view key);
-    
+
     /**
      * Creates a sprite with a Texture2D object.
      *
@@ -391,7 +391,7 @@ public:
     virtual void setIgnoreAnchorPointForPosition(bool value) override;
 
     virtual void setVisible(bool bVisible) override;
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
     virtual void setOpacityModifyRGB(bool modify) override;
     virtual bool isOpacityModifyRGB() const override;
     /// @}
@@ -627,7 +627,7 @@ public:
      * @lua     init
      */
     virtual bool initWithFile(std::string_view filename, const Rect& rect);
-    
+
     /**
      * Initializes a sprite with an image data, and a key for the cache.
      *
@@ -670,7 +670,7 @@ protected:
     void updatePoly();
     void updateStretchFactor();
     void populateTriangle(int quadIndex, const V3F_C4B_T2F_Quad& quad);
-    void setMVPMatrixUniform();
+    void setMVPMatrixUniform(const ax::Mat4& mvp);
     //
     // Data used when the sprite is rendered using a SpriteSheet
     //

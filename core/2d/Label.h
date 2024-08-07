@@ -699,8 +699,8 @@ public:
     virtual const Vec2& getContentSize() const override;
     virtual Rect getBoundingBox() const override;
 
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     virtual void setCameraMask(unsigned short mask, bool applyChildren = true) override;
 
@@ -768,7 +768,7 @@ protected:
 
     void computeStringNumLines();
 
-    void drawSelf(bool visibleByCamera, Renderer* renderer, uint32_t flags);
+    void drawSelf(bool visibleByCamera, const RenderContext& rctx, RenderArg1& rctx1);
 
     bool multilineTextWrapByChar();
     bool multilineTextWrapByWord();
@@ -816,12 +816,11 @@ protected:
     void updateBlendState();
     void updateEffectUniforms(BatchCommand& batch,
                               TextureAtlas* textureAtlas,
-                              Renderer* renderer,
-                              const Mat4& transform);
+                              const RenderContext& rctx, RenderArg1& rctx1);
     void updateBuffer(TextureAtlas* textureAtlas, CustomCommand& customCommand);
 
     void updateBatchCommand(BatchCommand& batch);
-    
+
     bool _contentDirty;
     bool _useDistanceField;
     bool _useA8Shader;
@@ -881,7 +880,7 @@ protected:
     Color4B _textColor;
 
     BlendFunc _blendFunc;
-   
+
     Vec2 _labelDimensions;
     Vec2 _shadowOffset;
     mutable Vec2 _scaledContentSize;  // !SDF scale
@@ -916,7 +915,7 @@ protected:
 
     std::vector<float> _linesWidth;
     std::vector<float> _linesOffsetX;
-    
+
     QuadCommand _quadCommand;
 
     std::vector<BatchCommand> _batchCommands;

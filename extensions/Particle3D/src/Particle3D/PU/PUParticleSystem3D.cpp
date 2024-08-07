@@ -1290,7 +1290,7 @@ void PUParticleSystem3D::removeAllListener()
     _listeners.clear();
 }
 
-void PUParticleSystem3D::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void PUParticleSystem3D::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (!_isEnabled)
         return;
@@ -1306,7 +1306,7 @@ void PUParticleSystem3D::draw(Renderer* renderer, const Mat4& transform, uint32_
             PUParticle3D* particle = static_cast<PUParticle3D*>(const_cast<ParticlePool&>(iter.second).getFirst());
             while (particle)
             {
-                static_cast<PUParticleSystem3D*>(particle->particleEntityPtr)->draw(renderer, transform, flags);
+                static_cast<PUParticleSystem3D*>(particle->particleEntityPtr)->draw(rctx, rctx1);
                 particle = static_cast<PUParticle3D*>(const_cast<ParticlePool&>(iter.second).getNext());
             }
         }

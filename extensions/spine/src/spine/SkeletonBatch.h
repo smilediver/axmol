@@ -53,7 +53,7 @@ namespace spine {
 		void deallocateVertices(uint32_t numVertices);
 		unsigned short *allocateIndices(uint32_t numIndices);
 		void deallocateIndices(uint32_t numVertices);
-		axmol::TrianglesCommand *addCommand(axmol::Renderer *renderer, float globalOrder, axmol::Texture2D *texture, axmol::backend::ProgramState *programState, axmol::BlendFunc blendType, const axmol::TrianglesCommand::Triangles &triangles, const axmol::Mat4 &mv, uint32_t flags);
+		axmol::TrianglesCommand *addCommand(const ax::RenderContext& rctx, ax::RenderArg1& rctx1);
 
 		axmol::backend::ProgramState* updateCommandPipelinePS(SkeletonCommand* command, axmol::backend::ProgramState* programState);
 

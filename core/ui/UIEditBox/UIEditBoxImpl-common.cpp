@@ -4,7 +4,7 @@
  Copyright (c) 2013-2015 zilongshanren
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -331,9 +331,10 @@ void EditBoxImplCommon::setGlobalZOrder(float globalZOrder)
     }
 }
 
-void EditBoxImplCommon::draw(Renderer* /*renderer*/, const Mat4& /*transform*/, uint32_t flags)
+void EditBoxImplCommon::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    if (flags)
+    // TODO: rctx flags
+    // if (flags)
     {
         auto rect = ui::Helper::convertBoundingBoxToScreen(_editBox);
         this->updateNativeFrame(rect);

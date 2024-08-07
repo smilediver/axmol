@@ -270,7 +270,7 @@ void LabelAtlas::updateColor()
 
 // CCLabelAtlas - draw
 #if AX_LABELATLAS_DEBUG_DRAW
-void LabelAtlas::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void LabelAtlas::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     AtlasNode::draw(renderer, transform, _transformUpdated);
 

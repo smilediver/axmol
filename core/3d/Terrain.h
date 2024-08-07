@@ -402,7 +402,7 @@ public:
     void setDetailMap(unsigned int index, DetailMap detailMap);
 
     // Overrides, internal use only
-    virtual void draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags) override;
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override;
     /**
      * Ray-Terrain intersection.
      * @return the intersection point

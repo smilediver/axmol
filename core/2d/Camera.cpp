@@ -65,6 +65,8 @@ Camera* Camera::createOrthographic(float zoomX, float zoomY, float nearPlane, fl
     return ret;
 }
 
+// TODO: rctx: this probably should return some default camera if there's no scene set. Otherwise,
+// touches can crash this?
 Camera* Camera::getDefaultCamera()
 {
     // camera nullptr scene init fix #690
@@ -217,7 +219,7 @@ void Camera::initDefault()
     }
 
     setDepth(0);
-	
+
     if (_zoomFactor != 1.0F)
         applyZoom();
 }
@@ -537,10 +539,10 @@ void Camera::setNearPlane(float nearPlane)
     Camera::updateTransform();
 }
 
-void Camera::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Camera::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _viewProjectionUpdated = _transformUpdated;
-    return Node::visit(renderer, parentTransform, parentFlags);
+    return Node::visit(rctx, rctx1);
 }
 
 void Camera::setBackgroundBrush(CameraBackgroundBrush* clearBrush)

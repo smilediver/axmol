@@ -128,7 +128,7 @@ bool ParticleBatchNode::initWithFile(std::string_view fileImage, int capacity)
 
 // override visit.
 // Don't call visit on it's children
-void ParticleBatchNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void ParticleBatchNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // CAREFUL:
     // This visit is almost identical to Node#visit
@@ -142,20 +142,10 @@ void ParticleBatchNode::visit(Renderer* renderer, const Mat4& parentTransform, u
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
     if (isVisitableByVisitingCamera())
-    {
-        // IMPORTANT:d
-        // To ease the migration to v3.0, we still support the Mat4 stack,
-        // but it is deprecated and your code should not rely on it
-        _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-        _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
-
-        draw(renderer, _modelViewTransform, flags);
-
-        _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    }
+        draw(rctx, rctx1);
 }
 
 // override addChild:
@@ -423,7 +413,7 @@ void ParticleBatchNode::removeAllChildrenWithCleanup(bool doCleanup)
     _textureAtlas->removeAllQuads();
 }
 
-void ParticleBatchNode::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void ParticleBatchNode::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     AX_PROFILER_START("CCParticleBatchNode - draw");
 
@@ -433,9 +423,8 @@ void ParticleBatchNode::draw(Renderer* renderer, const Mat4& transform, uint32_t
     _customCommand.init(_globalZOrder, _blendFunc);
 
     // Texture is set in TextureAtlas.
-    const ax::Mat4& projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Mat4 finalMat                      = projectionMat * transform;
-    auto programState                  = _customCommand.getPipelineDescriptor().programState;
+    Mat4 finalMat = rctx.viewProjectionTransform * _modelViewTransform;
+    auto programState = _customCommand.getPipelineDescriptor().programState;
     programState->setUniform(_mvpMatrixLocaiton, finalMat.m, sizeof(finalMat.m));
     if (_textureAtlas->isDirty())
     {
@@ -452,7 +441,7 @@ void ParticleBatchNode::draw(Renderer* renderer, const Mat4& transform, uint32_t
         _customCommand.updateIndexBuffer(indices, sizeof(indices[0]) * capacity * 6);
     }
 
-    renderer->addCommand(&_customCommand);
+    rctx.renderer->addCommand(&_customCommand);
 
     AX_PROFILER_STOP("CCParticleBatchNode - draw");
 }

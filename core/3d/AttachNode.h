@@ -57,7 +57,7 @@ public:
     virtual Mat4 getWorldToNodeTransform() const override;
     virtual Mat4 getNodeToWorldTransform() const override;
     virtual const Mat4& getNodeToParentTransform() const override;
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     AttachNode();
     virtual ~AttachNode();

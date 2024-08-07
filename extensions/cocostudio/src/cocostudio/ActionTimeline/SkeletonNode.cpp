@@ -162,7 +162,7 @@ void SkeletonNode::updateColor()
     _transformUpdated = _transformDirty = _inverseDirty = _contentSizeDirty = true;
 }
 
-void SkeletonNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, uint32_t parentFlags)
+void SkeletonNode::visit(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -170,7 +170,7 @@ void SkeletonNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
     // IMPORTANT:
     // To ease the migration to v3.0, we still support the Mat4 stack,
@@ -188,13 +188,13 @@ void SkeletonNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform
             auto node = _children.at(i);
 
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
 
         for (auto it = _children.cbegin() + i; it != _children.cend(); ++it)
-            (*it)->visit(renderer, _modelViewTransform, flags);
+            (*it)->visit(rctx, rctx1);
     }
 
     checkSubBonesDirty();
@@ -205,7 +205,7 @@ void SkeletonNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform
 
     if (_isRackShow)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
         // batch draw all sub bones
         _batchBoneCommand.init(_globalZOrder, _blendFunc);
         renderer->addCommand(&_batchBoneCommand);
@@ -218,7 +218,7 @@ void SkeletonNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform
     // _orderOfArrival = 0;
 }
 
-void SkeletonNode::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags)
+void SkeletonNode::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder, _blendFunc);
     renderer->addCommand(&_customCommand);

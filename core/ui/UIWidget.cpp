@@ -239,12 +239,12 @@ void Widget::onExit()
     ProtectedNode::onExit();
 }
 
-void Widget::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Widget::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_visible)
     {
         adaptRenderers();
-        ProtectedNode::visit(renderer, parentTransform, parentFlags);
+        ProtectedNode::visit(rctx, rctx1);
     }
 }
 

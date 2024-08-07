@@ -76,7 +76,7 @@ public:
     void setBlendFunc(const BlendFunc& blendFunc);
 
     // Overrides
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     DrawNode3D();
     virtual ~DrawNode3D();
@@ -193,7 +193,7 @@ bool DrawNode3D::init()
     return true;
 }
 
-void DrawNode3D::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void DrawNode3D::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder);
     // update mvp matrix

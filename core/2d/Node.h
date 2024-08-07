@@ -62,6 +62,8 @@ class Director;
 class Material;
 class Camera;
 class PhysicsBody;
+struct RenderContext;
+struct RenderArg1;
 
 namespace backend
 {
@@ -1128,7 +1130,7 @@ public:
      * @param transform A transform matrix.
      * @param flags Renderer flag.
      */
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags);
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1);
     virtual void draw() final;
 
     /**
@@ -1138,7 +1140,7 @@ public:
      * @param parentTransform A transform matrix.
      * @param parentFlags Renderer flag.
      */
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags);
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1);
     virtual void visit();
 
     /** Returns the Scene that contains the Node.
@@ -1477,6 +1479,9 @@ public:
 
     /// @{
     /// @name Transformations
+
+    // TODO: rctx
+    const Mat4& getParentWorldTransform() const;
 
     /**
      * Calls children's updateTransform() method recursively.
@@ -1827,7 +1832,7 @@ public:
      * @param applyChildren A boolean value to determine whether the mask bit should apply to its children or not.
      */
     void applyMaskOnEnter(bool applyChildren);
-    
+
     virtual void setProgramState(uint32_t programType) { setProgramStateWithRegistry(programType, nullptr); }
     void setProgramStateWithRegistry(uint32_t programType, Texture2D* texture);
 
@@ -1876,7 +1881,7 @@ protected:
     Vec2 convertToWindowSpace(const Vec2& nodePoint) const;
 
     Mat4 transform(const Mat4& parentTransform);
-    uint32_t processParentFlags(const Mat4& parentTransform, uint32_t parentFlags);
+    void processParentFlags() const;
 
     virtual void updateCascadeOpacity();
     virtual void disableCascadeOpacity();
@@ -1998,7 +2003,7 @@ protected:
 
     bool _usingNormalizedPosition;
     bool _normalizedPositionDirty;
-    
+
     bool _childFollowCameraMask;
     // camera mask, it is visible only when _cameraMask & current camera' camera flag is true
     unsigned short _cameraMask;

@@ -189,7 +189,7 @@ public:
     bool isVisible() const override { return _letterVisible; }
 
     // LabelLetter doesn't need to draw directly.
-    void draw(Renderer* /*renderer*/, const Mat4& /*transform*/, uint32_t /*flags*/) override {}
+    void draw(const RenderContext& rctx, RenderArg1& rctx1) override {}
 
 private:
     bool _letterVisible;
@@ -568,7 +568,7 @@ Label::~Label()
 
     AX_SAFE_RELEASE_NULL(_textSprite);
     AX_SAFE_RELEASE_NULL(_shadowNode);
-    
+
 #if AX_LABEL_DEBUG_DRAW
     AX_SAFE_RELEASE_NULL(_debugDrawNode);
 #endif
@@ -1807,17 +1807,14 @@ void Label::updateBuffer(TextureAtlas* textureAtlas, CustomCommand& customComman
 
 void Label::updateEffectUniforms(BatchCommand& batch,
                                  TextureAtlas* textureAtlas,
-                                 Renderer* renderer,
-                                 const Mat4& transform)
+                                 const RenderContext& rctx, RenderArg1& rctx1)
 {
     updateBuffer(textureAtlas, batch.textCommand);
-
-    auto& matrixProjection = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 
     if (_shadowEnabled)
     {
         updateBuffer(textureAtlas, batch.shadowCommand);
-        auto shadowMatrix = matrixProjection * _shadowTransform;
+        auto shadowMatrix = rctx.viewProjectionTransform * _shadowTransform;
         batch.shadowCommand.getPipelineDescriptor().programState->setUniform(_mvpMatrixLocation, shadowMatrix.m,
                                                                              sizeof(shadowMatrix.m));
     }
@@ -1839,7 +1836,7 @@ void Label::updateEffectUniforms(BatchCommand& batch,
                 programStateShadow->setUniform(_effectColorLocation, &shadowColor, sizeof(Vec4));
                 programStateShadow->setUniform(_effectTypeLocation, &effectType, sizeof(effectType));
                 batch.shadowCommand.init(_globalZOrder);
-                renderer->addCommand(&batch.shadowCommand);
+                rctx.renderer->addCommand(&batch.shadowCommand);
             }
 
             if (_useDistanceField)
@@ -1858,7 +1855,7 @@ void Label::updateEffectUniforms(BatchCommand& batch,
                     programStateOutline->setUniform(_effectColorLocation, &effectColor, sizeof(Vec4));
                     programStateOutline->setUniform(_effectTypeLocation, &effectType, sizeof(effectType));
                     batch.outLineCommand.init(_globalZOrder);
-                    renderer->addCommand(&batch.outLineCommand);
+                    rctx.renderer->addCommand(&batch.outLineCommand);
                 }
 
                 // draw text
@@ -1880,7 +1877,7 @@ void Label::updateEffectUniforms(BatchCommand& batch,
                 auto* programStateShadow = batch.shadowCommand.getPipelineDescriptor().programState;
                 programStateShadow->setUniform(_textColorLocation, &shadowColor, sizeof(Vec4));
                 batch.shadowCommand.init(_globalZOrder);
-                renderer->addCommand(&batch.shadowCommand);
+                rctx.renderer->addCommand(&batch.shadowCommand);
             }
         }
         break;
@@ -1894,7 +1891,7 @@ void Label::updateEffectUniforms(BatchCommand& batch,
                 programStateShadow->setUniform(_textColorLocation, &shadowColor, sizeof(Vec4));
                 programStateShadow->setUniform(_effectColorLocation, &shadowColor, sizeof(Vec4));
                 batch.shadowCommand.init(_globalZOrder);
-                renderer->addCommand(&batch.shadowCommand);
+                rctx.renderer->addCommand(&batch.shadowCommand);
             }
 
             Vec4 effectColor(_effectColorF.r, _effectColorF.g, _effectColorF.b, _effectColorF.a);
@@ -1917,7 +1914,7 @@ void Label::updateEffectUniforms(BatchCommand& batch,
             batch.shadowCommand.updateVertexBuffer(
                 textureAtlas->getQuads(), (unsigned int)(textureAtlas->getTotalQuads() * sizeof(V3F_C4B_T2F_Quad)));
             batch.shadowCommand.init(_globalZOrder);
-            renderer->addCommand(&batch.shadowCommand);
+            rctx.renderer->addCommand(&batch.shadowCommand);
 
             _displayedOpacity = oldOPacity;
             setColor(oldColor);
@@ -1925,35 +1922,39 @@ void Label::updateEffectUniforms(BatchCommand& batch,
     }
 
     batch.textCommand.init(_globalZOrder);
-    renderer->addCommand(&batch.textCommand);
+    rctx.renderer->addCommand(&batch.textCommand);
 }
 
-void Label::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void Label::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_batchNodes.empty() || _lengthOfString <= 0)
     {
         return;
     }
+
+    auto renderer = rctx.renderer;
+
     // Don't do calculate the culling if the transform was not updated
-    bool transformUpdated = flags & FLAGS_TRANSFORM_DIRTY;
+    // TODO: rctx
+    // bool transformUpdated = flags & FLAGS_TRANSFORM_DIRTY;
+    bool transformUpdated = true;
 #if AX_USE_CULLING
     auto visitingCamera = Camera::getVisitingCamera();
     auto defaultCamera  = Camera::getDefaultCamera();
     if (visitingCamera == defaultCamera)
     {
         _insideBounds = (transformUpdated || visitingCamera->isViewProjectionUpdated())
-                            ? renderer->checkVisibility(transform, _contentSize)
+                            ? renderer->checkVisibility(_modelViewTransform, _contentSize)
                             : _insideBounds;
     }
     else
     {
-        _insideBounds = renderer->checkVisibility(transform, _contentSize);
+        _insideBounds = renderer->checkVisibility(_modelViewTransform, _contentSize);
     }
 
     if (_insideBounds)
 #endif
     {
-        ax::Mat4 matrixProjection = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
         if (!_shadowEnabled && (_currentLabelType == LabelType::BMFONT || _currentLabelType == LabelType::CHARMAP))
         {
             updateBlendState();
@@ -1968,15 +1969,16 @@ void Label::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
 
             auto texture       = textureAtlas->getTexture();
             auto& pipelineQuad = _quadCommand.getPipelineDescriptor();
-            pipelineQuad.programState->setUniform(_mvpMatrixLocation, matrixProjection.m, sizeof(matrixProjection.m));
+            pipelineQuad.programState->setUniform(_mvpMatrixLocation, rctx.viewProjectionTransform.m, sizeof(rctx.viewProjectionTransform.m));
             pipelineQuad.programState->setTexture(texture->getBackendTexture());
+            // TODO: rctx flags
             _quadCommand.init(_globalZOrder, texture, _blendFunc, textureAtlas->getQuads(),
-                              textureAtlas->getTotalQuads(), transform, flags);
+                              textureAtlas->getTotalQuads(), _modelViewTransform, 0);
             renderer->addCommand(&_quadCommand);
         }
         else
         {
-            ax::Mat4 matrixMVP = matrixProjection * transform;
+            ax::Mat4 matrixMVP = rctx.viewProjectionTransform * _modelViewTransform;
 
             for (auto&& it : _letters)
             {
@@ -2010,7 +2012,7 @@ void Label::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
                                                                                    sizeof(matrixMVP.m));
                 batch.outLineCommand.getPipelineDescriptor().programState->setUniform(_mvpMatrixLocation, matrixMVP.m,
                                                                                       sizeof(matrixMVP.m));
-                updateEffectUniforms(batch, textureAtlas, renderer, transform);
+                updateEffectUniforms(batch, textureAtlas, rctx, rctx1);
             }
         }
     }
@@ -2030,7 +2032,7 @@ void Label::updateBlendState()
     updateBlend(_quadCommand.getPipelineDescriptor().blendDescriptor, _blendFunc);
 }
 
-void Label::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Label::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (!_visible || (_utf8Text.empty() && _children.empty()))
     {
@@ -2046,15 +2048,17 @@ void Label::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t pare
         updateContent();
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
-    if (!_utf8Text.empty() && _shadowEnabled && (_shadowDirty || (flags & FLAGS_DIRTY_MASK)))
+    // TODO: rctx optimize
+    // if (!_utf8Text.empty() && _shadowEnabled && (_shadowDirty || (flags & FLAGS_DIRTY_MASK)))
+    if (!_utf8Text.empty() && _shadowEnabled && _shadowDirty)
     {
         _position.x += _shadowOffset.width;
         _position.y += _shadowOffset.height;
         _transformDirty = _inverseDirty = true;
 
-        _shadowTransform = transform(parentTransform);
+        _shadowTransform = transform(getParentWorldTransform());
 
         _position.x -= _shadowOffset.width;
         _position.y -= _shadowOffset.height;
@@ -2069,12 +2073,6 @@ void Label::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t pare
         return;
     }
 
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
-
     if (!_children.empty())
     {
         sortAllChildren();
@@ -2086,43 +2084,41 @@ void Label::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t pare
             auto node = _children.at(i);
 
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
 
-        this->drawSelf(visibleByCamera, renderer, flags);
+        this->drawSelf(visibleByCamera, rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
         {
-            (*it)->visit(renderer, _modelViewTransform, flags);
+            (*it)->visit(rctx, rctx1);
         }
     }
     else
     {
-        this->drawSelf(visibleByCamera, renderer, flags);
+        this->drawSelf(visibleByCamera, rctx, rctx1);
     }
 
 #if AX_LABEL_DEBUG_DRAW
     _debugDrawNode->visit(renderer, _modelViewTransform, parentFlags | FLAGS_TRANSFORM_DIRTY);
 #endif
-    
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
-void Label::drawSelf(bool visibleByCamera, Renderer* renderer, uint32_t flags)
+void Label::drawSelf(bool visibleByCamera, const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_textSprite)
     {
         if (_shadowNode)
         {
-            _shadowNode->visit(renderer, _modelViewTransform, flags);
+            _shadowNode->visit(rctx, rctx1);
         }
-        _textSprite->visit(renderer, _modelViewTransform, flags);
+        _textSprite->visit(rctx, rctx1);
     }
     else if (visibleByCamera && !_utf8Text.empty())
     {
-        draw(renderer, _modelViewTransform, flags);
+        draw(rctx, rctx1);
     }
 }
 

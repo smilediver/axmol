@@ -210,7 +210,7 @@ bool RenderTexture::initWithWidthAndHeight(int w,
              _renderTarget = backend::DriverBase::getInstance()->newRenderTarget(
                  _texture2D ? _texture2D->getBackendTexture() : nullptr,
                  _depthStencilTexture ? _depthStencilTexture->getBackendTexture() : nullptr,
-                 _depthStencilTexture ? _depthStencilTexture->getBackendTexture() : nullptr);	        
+                 _depthStencilTexture ? _depthStencilTexture->getBackendTexture() : nullptr);
         }
 
         _renderTarget->setColorAttachment(_texture2D ? _texture2D->getBackendTexture() : nullptr);
@@ -339,7 +339,7 @@ void RenderTexture::clearStencil(int stencilValue)
     setClearStencil(stencilValue);
 }
 
-void RenderTexture::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void RenderTexture::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // override visit.
     // Don't call visit on its children
@@ -348,21 +348,13 @@ void RenderTexture::visit(Renderer* renderer, const Mat4& parentTransform, uint3
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
-
-    _sprite->visit(renderer, _modelViewTransform, flags);
+    _sprite->visit(rctx, rctx1);
     if (isVisitableByVisitingCamera())
     {
-        draw(renderer, _modelViewTransform, flags);
+        draw(rctx, rctx1);
     }
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
     // FIX ME: Why need to set _orderOfArrival to 0??
     // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920
@@ -494,7 +486,7 @@ void RenderTexture::onSaveToFile(std::string filename, bool isRGBA, bool forceNo
             if (_saveFileCallback)
             {
                 _saveFileCallback(this, _filename);
-            }          
+            }
         }
     };
     newImage(callbackFunc);
@@ -531,7 +523,7 @@ void RenderTexture::newImage(std::function<void(RefPtr<Image>)> imageCallback, b
     });
 }
 
-void RenderTexture::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void RenderTexture::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_autoDraw)
     {
@@ -547,7 +539,7 @@ void RenderTexture::draw(Renderer* renderer, const Mat4& transform, uint32_t fla
         for (const auto& child : _children)
         {
             if (child != _sprite)
-                child->visit(renderer, transform, flags);
+                child->visit(rctx, rctx1);
         }
 
         // End will pop the current render group
@@ -557,6 +549,7 @@ void RenderTexture::draw(Renderer* renderer, const Mat4& transform, uint32_t fla
 
 void RenderTexture::onBegin()
 {
+    /* TODO: rctx matrix
     _oldProjMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
     _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _projectionMatrix);
 
@@ -594,10 +587,12 @@ void RenderTexture::onBegin()
 
     _oldRenderTarget = renderer->getRenderTarget();
     renderer->setRenderTarget(_renderTarget);
+    */
 }
 
 void RenderTexture::onEnd()
 {
+    /* TODO: rctx matrix
     _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _oldProjMatrix);
     _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _oldTransMatrix);
 
@@ -605,10 +600,12 @@ void RenderTexture::onEnd()
     renderer->setViewPort(_oldViewport.x, _oldViewport.y, _oldViewport.width, _oldViewport.height);
 
     renderer->setRenderTarget(_oldRenderTarget);
+    */
 }
 
 void RenderTexture::begin()
 {
+    /* TODO: rctx matrix
     _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
     _projectionMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 
@@ -644,10 +641,12 @@ void RenderTexture::begin()
     beginCommand->init(_globalZOrder);
     beginCommand->func = AX_CALLBACK_0(RenderTexture::onBegin, this);
     renderer->addCommand(beginCommand);
+    */
 }
 
 void RenderTexture::end()
 {
+    /* TODO: rctx matrix
     Renderer* renderer = _director->getRenderer();
 
     auto endCommand = renderer->nextCallbackCommand();
@@ -659,6 +658,7 @@ void RenderTexture::end()
 
     _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
     _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    */
 }
 
 void RenderTexture::setClearFlags(ClearFlag clearFlags)

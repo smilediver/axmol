@@ -36,7 +36,7 @@ public:
     virtual void setContentSize(const ax::Size& size) override;
 
 protected:
-    virtual void draw(ax::Renderer *renderer, const ax::Mat4 &transform, uint32_t flags) override;
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override;
 
     ax::Tex2F textureCoordFromAlphaPoint(ax::Vec2 alpha);
     ax::Vec3 vertexFromAlphaPoint(ax::Vec2 alpha);
@@ -57,7 +57,7 @@ private:
     ax::TrianglesCommand::Triangles _fillTriangles;
     ax::V3F_C4B_T2F *_vertexData;
     unsigned short *_vertexIndex;
-    
+
     static ax::Texture2D* _empty;
 };
 

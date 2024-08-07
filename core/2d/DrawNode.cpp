@@ -214,7 +214,7 @@ void DrawNode::setVertexLayout(CustomCommand& cmd)
 }
 
 void DrawNode::freeShaderInternal(CustomCommand& cmd)
-{   
+{
     auto& pipelinePS = cmd.getPipelineDescriptor().programState;
     AX_SAFE_RELEASE_NULL(pipelinePS);
 }
@@ -241,11 +241,10 @@ void DrawNode::updateBlendState(CustomCommand& cmd)
     }
 }
 
-void DrawNode::updateUniforms(const Mat4& transform, CustomCommand& cmd)
+void DrawNode::updateUniforms(const Mat4& viewProjectionTransform, const Mat4& transform, CustomCommand& cmd)
 {
     auto& pipelineDescriptor = cmd.getPipelineDescriptor();
-    const auto& matrixP      = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Mat4 matrixMVP           = matrixP * transform;
+    Mat4 matrixMVP           = viewProjectionTransform * transform;
     auto mvpLocation         = pipelineDescriptor.programState->getUniformLocation("u_MVPMatrix");
     pipelineDescriptor.programState->setUniform(mvpLocation, matrixMVP.m, sizeof(matrixMVP.m));
 
@@ -254,30 +253,30 @@ void DrawNode::updateUniforms(const Mat4& transform, CustomCommand& cmd)
     pipelineDescriptor.programState->setUniform(alphaUniformLocation, &alpha, sizeof(alpha));
 }
 
-void DrawNode::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void DrawNode::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_bufferCountTriangle)
     {
         updateBlendState(_customCommandTriangle);
-        updateUniforms(transform, _customCommandTriangle);
+        updateUniforms(rctx.viewProjectionTransform, _modelViewTransform, _customCommandTriangle);
         _customCommandTriangle.init(_globalZOrder);
-        renderer->addCommand(&_customCommandTriangle);
+        rctx.renderer->addCommand(&_customCommandTriangle);
     }
 
     if (_bufferCountPoint)
     {
         updateBlendState(_customCommandPoint);
-        updateUniforms(transform, _customCommandPoint);
+        updateUniforms(rctx.viewProjectionTransform, _modelViewTransform, _customCommandPoint);
         _customCommandPoint.init(_globalZOrder);
-        renderer->addCommand(&_customCommandPoint);
+        rctx.renderer->addCommand(&_customCommandPoint);
     }
 
     if (_bufferCountLine)
     {
         updateBlendState(_customCommandLine);
-        updateUniforms(transform, _customCommandLine);
+        updateUniforms(rctx.viewProjectionTransform, _modelViewTransform, _customCommandLine);
         _customCommandLine.init(_globalZOrder);
-        renderer->addCommand(&_customCommandLine);
+        rctx.renderer->addCommand(&_customCommandLine);
     }
 }
 
@@ -936,17 +935,20 @@ float DrawNode::getLineWidth()
     return this->_lineWidth;
 }
 
-void DrawNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void DrawNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    if (_isolated)
-    {
-        // ignore `parentTransform` from parent
-        Node::visit(renderer, Mat4::IDENTITY, parentFlags);
-    }
-    else
-    {
-        Node::visit(renderer, parentTransform, parentFlags);
-    }
+    // TODO: rctx
+    // if (_isolated)
+    // {
+    //     // ignore `parentTransform` from parent
+    //     Node::visit(rctx, Mat4::IDENTITY, parentFlags);
+    // }
+    // else
+    // {
+    //     Node::visit(rctx, rctx1);
+    // }
+    AX_ASSERT(!_isolated);
+    Node::visit(rctx, rctx1);
 }
 
 NS_AX_END

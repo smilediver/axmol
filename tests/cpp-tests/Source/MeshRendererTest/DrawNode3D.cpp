@@ -106,7 +106,7 @@ bool DrawNode3D::init()
     return true;
 }
 
-void DrawNode3D::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void DrawNode3D::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder, transform, flags);
 

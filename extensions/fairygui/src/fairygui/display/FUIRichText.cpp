@@ -242,7 +242,7 @@ void FUIRichText::visit(ax::Renderer * renderer, const ax::Mat4 & parentTransfor
     if (_visible)
         formatText();
 
-    Node::visit(renderer, parentTransform, parentFlags);
+    Node::visit(rctx, rctx1);
 }
 
 void FUIRichText::formatText()

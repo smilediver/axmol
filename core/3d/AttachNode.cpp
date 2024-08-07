@@ -68,8 +68,10 @@ const Mat4& AttachNode::getNodeToParentTransform() const
     return _transformToParent;
 }
 
-void AttachNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t /*parentFlags*/)
+void AttachNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    Node::visit(renderer, parentTransform, Node::FLAGS_DIRTY_MASK);
+    // TODO: rectx flags
+    // Node::visit(rctx, parentTransform, Node::FLAGS_DIRTY_MASK);
+    Node::visit(rctx, rctx1);
 }
 NS_AX_END

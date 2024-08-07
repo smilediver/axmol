@@ -459,52 +459,6 @@ public:
     float getFrameRate() const { return _frameRate; }
 
     /**
-     * Clones a specified type matrix and put it to the top of specified type of matrix stack.
-     * @js NA
-     */
-    void pushMatrix(MATRIX_STACK_TYPE type);
-
-    /** Pops the top matrix of the specified type of matrix stack.
-     * @js NA
-     */
-    void popMatrix(MATRIX_STACK_TYPE type);
-
-    /** Adds an identity matrix to the top of specified type of matrix stack.
-     * @js NA
-     */
-    void loadIdentityMatrix(MATRIX_STACK_TYPE type);
-
-    /**
-     * Adds a matrix to the top of specified type of matrix stack.
-     *
-     * @param type Matrix type.
-     * @param mat The matrix that to be added.
-     * @js NA
-     */
-    void loadMatrix(MATRIX_STACK_TYPE type, const Mat4& mat);
-
-    /**
-     * Multiplies a matrix to the top of specified type of matrix stack.
-     *
-     * @param type Matrix type.
-     * @param mat The matrix that to be multiplied.
-     * @js NA
-     */
-    void multiplyMatrix(MATRIX_STACK_TYPE type, const Mat4& mat);
-
-    /**
-     * Gets the top matrix of specified type of matrix stack.
-     * @js NA
-     */
-    const Mat4& getMatrix(MATRIX_STACK_TYPE type) const;
-
-    /**
-     * Clear all types of matrix stack, and add identity matrix to these matrix stacks.
-     * @js NA
-     */
-    void resetMatrixStack();
-
-    /**
      * returns the axmol thread id.
      Useful to know if certain code is already running on the axmol thread
      */
@@ -564,12 +518,6 @@ protected:
     // textureCache creation or release
     void initTextureCache();
     void destroyTextureCache();
-
-    void initMatrixStack();
-
-    std::stack<Mat4> _modelViewMatrixStack;
-    std::stack<Mat4> _textureMatrixStack;
-    std::stack<Mat4> _projectionMatrixStack;
 
     /** Scheduler associated with this director
      @since v2.0

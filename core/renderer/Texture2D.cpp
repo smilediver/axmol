@@ -781,6 +781,8 @@ void Texture2D::drawAtPoint(const Vec2& point, float globalZOrder)
 
 void Texture2D::drawInRect(const Rect& rect, float globalZOrder)
 {
+    assert(false);
+    /* TODO: rctx matrix
     initProgram();
     _customCommand.init(globalZOrder);
     auto director          = Director::getInstance();
@@ -809,6 +811,7 @@ void Texture2D::drawInRect(const Rect& rect, float globalZOrder)
     _programState->setUniform(_mvpMatrixLocation, matrixMVP.m, sizeof(matrixMVP.m));
     _customCommand.updateVertexBuffer(vertexData, sizeof(vertexData));
     Director::getInstance()->getRenderer()->addCommand(&_customCommand);
+    */
 }
 
 NS_AX_END

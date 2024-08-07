@@ -1634,7 +1634,7 @@ void TexturePixelFormat::onEnter()
     Director::getInstance()->getTextureCache()->removeTexture(sprite5->getTexture());
 
     // A8 image (8-bit)
-    auto sprite6 = Sprite::create("Images/test-rgba1.png", PixelFormat::R8); // 
+    auto sprite6 = Sprite::create("Images/test-rgba1.png", PixelFormat::R8); //
     sprite6->setPosition(Vec2(6 * s.width / 7, s.height / 2 - 32));
     addChild(sprite6, 0);
 
@@ -2008,9 +2008,9 @@ std::string TextureDrawAtPoint::subtitle() const
     return "draws 2 textures using drawAtPoint";
 }
 
-void TextureDrawAtPoint::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void TextureDrawAtPoint::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    TextureDemo::draw(renderer, transform, flags);
+    TextureDemo::draw(rctx, rctx1);
 
     onDraw(transform, flags);
 }
@@ -2048,9 +2048,9 @@ TextureDrawInRect::~TextureDrawInRect()
     _Tex2F->release();
 }
 
-void TextureDrawInRect::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void TextureDrawInRect::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    TextureDemo::draw(renderer, transform, flags);
+    TextureDemo::draw(rctx, rctx1);
     onDraw(transform, flags);
 }
 

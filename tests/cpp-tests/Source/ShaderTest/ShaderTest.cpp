@@ -151,7 +151,7 @@ void ShaderNode::setPosition(const Vec2& newPosition)
                              position.y * frameSize.height / visibleSize.height * retinaFactor);
 }
 
-void ShaderNode::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void ShaderNode::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder, transform, flags);
 

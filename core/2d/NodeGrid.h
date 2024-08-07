@@ -86,7 +86,7 @@ public:
     const Rect& getGridRect() const { return _gridRect; }
 
     // overrides
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     NodeGrid();
     virtual ~NodeGrid();

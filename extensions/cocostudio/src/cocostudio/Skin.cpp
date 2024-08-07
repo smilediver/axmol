@@ -224,7 +224,7 @@ Mat4 Skin::getNodeToWorldTransformAR() const
     return TransformConcat(_bone->getArmature()->getNodeToWorldTransform(), displayTransform);
 }
 
-void Skin::draw(Renderer* renderer, const Mat4& /*transform*/, uint32_t flags)
+void Skin::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     auto mv = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 

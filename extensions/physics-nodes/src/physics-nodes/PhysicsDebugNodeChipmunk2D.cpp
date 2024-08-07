@@ -213,7 +213,7 @@ static void DrawConstraint(cpConstraint* constraint, DrawNode* renderer)
 
 // implementation of PhysicsDebugNode
 
-void PhysicsDebugNodeChipmunk2D::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void PhysicsDebugNodeChipmunk2D::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (!_spacePtr)
     {
@@ -225,7 +225,7 @@ void PhysicsDebugNodeChipmunk2D::draw(Renderer* renderer, const Mat4& transform,
     cpSpaceEachShape(_spacePtr, (cpSpaceShapeIteratorFunc)DrawShape, this);
     cpSpaceEachConstraint(_spacePtr, (cpSpaceConstraintIteratorFunc)DrawConstraint, this);
 
-    DrawNode::draw(renderer, transform, flags);
+    DrawNode::draw(rctx, rctx1);
 }
 
 PhysicsDebugNodeChipmunk2D::PhysicsDebugNodeChipmunk2D() : _spacePtr(nullptr) {}

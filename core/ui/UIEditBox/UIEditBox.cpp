@@ -3,7 +3,7 @@
  Copyright (c) 2012 James Chen
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -787,12 +787,12 @@ std::string EditBox::getDescription() const
     return "EditBox";
 }
 
-void EditBox::draw(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void EditBox::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    Widget::draw(renderer, parentTransform, parentFlags);
+    Widget::draw(rctx, rctx1);
     if (_editBoxImpl != nullptr)
     {
-        _editBoxImpl->draw(renderer, parentTransform, parentFlags & FLAGS_TRANSFORM_DIRTY);
+        _editBoxImpl->draw(rctx, rctx1);
     }
 }
 

@@ -2,7 +2,7 @@
  Copyright (c) 2014 cocos2d-x.org
  Author: Jeff Wang <wohaaitinciu@gmail.com>
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -77,7 +77,7 @@ public:
     void evaluateJS(std::string_view js);
     void setScalesPageToFit(const bool scalesPageToFit);
 
-    virtual void draw(ax::Renderer* renderer, ax::Mat4 const& transform, uint32_t flags);
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1);
     virtual void setVisible(bool visible);
 
     void setBounces(bool bounces);

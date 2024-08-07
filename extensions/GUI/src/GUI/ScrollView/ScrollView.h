@@ -247,7 +247,7 @@ public:
      * @js NA
      * @lua NA
      */
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     using Node::addChild;
     virtual void addChild(Node* child, int zOrder, int tag) override;

@@ -108,7 +108,7 @@ public:
     //
     // Overrides
     //
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
     virtual void onEnter() override;
     virtual void onExit() override;
     virtual void cleanup() override;
@@ -122,7 +122,7 @@ public:
 protected:
     virtual void sceneOrder();
     void setNewScene(float dt);
-    
+
     /**  Set the number of actions to be done to finish
      */
     void setWaitForFinishCount(int count);
@@ -132,11 +132,11 @@ protected:
     float _duration;
     bool _isInSceneOnTop;
     bool _isSendCleanupToScene;
-    
-    
+
+
 private:
     AX_DISALLOW_COPY_AND_ASSIGN(TransitionScene);
-    
+
     int _waitForFinishCount = 1;
 };
 
@@ -804,7 +804,7 @@ public:
     /**
      * @lua NA
      */
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
     /**
      * @lua NA
      */
@@ -851,7 +851,7 @@ public:
     /**
      * @js NA
      */
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     TransitionTurnOffTiles();
     virtual ~TransitionTurnOffTiles();
@@ -894,7 +894,7 @@ public:
     virtual void onEnter() override;
     virtual ActionInterval* easeActionWithAction(ActionInterval* action) override;
     virtual void onExit() override;
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     TransitionSplitCols();
     virtual ~TransitionSplitCols();
@@ -966,7 +966,7 @@ public:
     virtual void onEnter() override;
     virtual ActionInterval* easeActionWithAction(ActionInterval* action) override;
     virtual void onExit() override;
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     TransitionFadeTR();
     virtual ~TransitionFadeTR();

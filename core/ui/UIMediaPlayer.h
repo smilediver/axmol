@@ -358,7 +358,7 @@ public:
     virtual void onPlayEvent(int event);
 
     void setVisible(bool visible) override;
-    void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
     void onEnter() override;
     void onExit() override;
 

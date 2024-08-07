@@ -154,7 +154,7 @@ public:
      * This node becomes the action's target. Refer to Action::getTarget()
      * @warning Actions don't retain their target.
      *
-     * @return a pointer to Action 
+     * @return a pointer to Action
      */
     virtual Action* runAction(Action* action) override;
 
@@ -186,7 +186,7 @@ public:
     bool isWireframe() const { return _wireframe; }
 
     /** render all meshes within this mesh renderer */
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     /** Adds a new material to this mesh renderer.
      The Material will be applied to all the meshes that belong to the mesh renderer.
@@ -196,13 +196,13 @@ public:
 
     /** Adds a new material to a particular mesh in this mesh renderer.
      * if meshIndex == -1, then it will be applied to all the meshes that belong to this mesh renderer.
-     * 
+     *
      * @param meshIndex Index of the mesh to apply the material to.
      */
     void setMaterial(Material* material, int meshIndex);
 
     /** Gets the material of a specific mesh in this mesh renderer.
-     * 
+     *
      * @param meshIndex Index of the mesh to get the material from. 0 is the default index.
      */
     Material* getMaterial(int meshIndex = 0) const;
@@ -231,7 +231,7 @@ public:
      * Note: all children will be rendered in 3D space with depth, this behaviour can be changed using
      * setForce2DQueue()
      */
-    virtual void visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
+    virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 
     /** generate default material. */
     void genMaterial(bool useLight = false);

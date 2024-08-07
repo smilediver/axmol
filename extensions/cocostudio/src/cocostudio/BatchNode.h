@@ -61,10 +61,10 @@ public:
     virtual void addChild(ax::Node* pChild, int zOrder, int tag) override;
     virtual void addChild(ax::Node* pChild, int zOrder, std::string_view name) override;
     virtual void removeChild(ax::Node* child, bool cleanup) override;
-    virtual void visit(ax::Renderer* renderer,
+    virtual void visit(const ax::RenderContext& rctx,
                        const ax::Mat4& parentTransform,
                        uint32_t parentFlags) override;
-    virtual void draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags) override;
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override;
 
 protected:
     void generateGroupCommand();

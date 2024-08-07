@@ -26,9 +26,9 @@
 
 USING_NS_AX;
 
-void CustomTableViewCell::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void CustomTableViewCell::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    TableViewCell::draw(renderer, transform, flags);
+    TableViewCell::draw(rctx, rctx1);
     // draw bounding box
     // 	auto pos = getPosition();
     // 	auto size = Size(178, 200);

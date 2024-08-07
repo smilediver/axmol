@@ -168,7 +168,7 @@ void ParticleSystem3D::update(float delta)
     }
 }
 
-void ParticleSystem3D::draw(Renderer* renderer, const Mat4& transform, uint32_t /*flags*/)
+void ParticleSystem3D::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (getAliveParticleCount() && _render)
     {

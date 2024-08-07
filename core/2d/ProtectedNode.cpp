@@ -6,7 +6,7 @@
  Copyright (c) 2013-2016 Chukong Technologies Inc.
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -271,7 +271,7 @@ void ProtectedNode::reorderProtectedChild(ax::Node* child, int localZOrder)
     child->setLocalZOrder(localZOrder);
 }
 
-void ProtectedNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void ProtectedNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -279,13 +279,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4& parentTransform, uint3
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
-
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    processParentFlags();
 
     int i = 0;  // used by _children
     int j = 0;  // used by _protectedChildren
@@ -301,7 +295,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4& parentTransform, uint3
         auto node = _children.at(i);
 
         if (node && node->getLocalZOrder() < 0)
-            node->visit(renderer, _modelViewTransform, flags);
+            node->visit(rctx, rctx1);
         else
             break;
     }
@@ -311,7 +305,7 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4& parentTransform, uint3
         auto node = _protectedChildren.at(j);
 
         if (node && node->getLocalZOrder() < 0)
-            node->visit(renderer, _modelViewTransform, flags);
+            node->visit(rctx, rctx1);
         else
             break;
     }
@@ -320,22 +314,20 @@ void ProtectedNode::visit(Renderer* renderer, const Mat4& parentTransform, uint3
     // draw self
     //
     if (isVisitableByVisitingCamera())
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
 
     //
     // draw children and protectedChildren zOrder >= 0
     //
     for (auto it = _protectedChildren.cbegin() + j, itCend = _protectedChildren.cend(); it != itCend; ++it)
-        (*it)->visit(renderer, _modelViewTransform, flags);
+        (*it)->visit(rctx, rctx1);
 
     for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-        (*it)->visit(renderer, _modelViewTransform, flags);
+        (*it)->visit(rctx, rctx1);
 
     // FIX ME: Why need to set _orderOfArrival to 0??
     // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920
     // setOrderOfArrival(0);
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void ProtectedNode::onEnter()

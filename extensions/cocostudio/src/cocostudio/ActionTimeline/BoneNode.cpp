@@ -340,7 +340,7 @@ void BoneNode::setDebugDrawColor(const ax::Color4F& color)
     updateColor();
 }
 
-void BoneNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, uint32_t parentFlags)
+void BoneNode::visit(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -348,7 +348,7 @@ void BoneNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, ui
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
     // IMPORTANT:
     // To ease the migration to v3.0, we still support the Mat4 stack,
@@ -370,25 +370,25 @@ void BoneNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, ui
             if (_rootSkeleton != nullptr && _boneSkins.contains(node))  // skip skin when bone is in a skeleton
                 continue;
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
         // self draw
         if (isdebugdraw)
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i; it != _children.cend(); ++it)
         {
             auto node = (*it);
             if (_rootSkeleton != nullptr && _boneSkins.contains(node))  // skip skin when bone is in a skeleton
                 continue;
-            node->visit(renderer, _modelViewTransform, flags);
+            node->visit(rctx, rctx1);
         }
     }
     else if (isdebugdraw)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
     }
 
     _director->popMatrix(ax::MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
@@ -399,7 +399,7 @@ void BoneNode::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, ui
     // _orderOfArrival = 0;
 }
 
-void BoneNode::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags)
+void BoneNode::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder, _blendFunc);
     renderer->addCommand(&_customCommand);

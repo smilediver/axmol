@@ -352,7 +352,7 @@ void FUISprite::updateRadial(void)
     {
         triangleCount = _vertexDataCount - 2;
     }
-    
+
     updateColor();
 
     if (!sameIndexCount)
@@ -377,13 +377,13 @@ void FUISprite::updateRadial(void)
     //    hitpoint will go last
     _vertexData[_vertexDataCount - 1].texCoords = textureCoordFromAlphaPoint(hit);
     _vertexData[_vertexDataCount - 1].vertices = vertexFromAlphaPoint(hit);
-    
+
     for (int i = 0; i < triangleCount; i++) {
         _vertexIndex[i * 3] = 0;
         _vertexIndex[i * 3 + 1] = i + 1;
         _vertexIndex[i * 3 + 2] = i + 2;
     }
-    
+
     _fillTriangles.verts = _vertexData;
     _fillTriangles.vertCount = _vertexDataCount;
     _fillTriangles.indices = _vertexIndex;
@@ -452,14 +452,14 @@ void FUISprite::updateBar(void)
     //    BOTRIGHT
     _vertexData[3].texCoords = textureCoordFromAlphaPoint(Vec2(max.x, min.y));
     _vertexData[3].vertices = vertexFromAlphaPoint(Vec2(max.x, min.y));
-    
+
     _vertexIndex[0] = 0;
     _vertexIndex[1] = 1;
     _vertexIndex[2] = 2;
     _vertexIndex[3] = 2;
     _vertexIndex[4] = 1;
     _vertexIndex[5] = 3;
-    
+
     _fillTriangles.verts = _vertexData;
     _fillTriangles.vertCount = 4;
     _fillTriangles.indices = _vertexIndex;
@@ -484,13 +484,13 @@ Vec2 FUISprite::boundaryTexCoord(char index)
     return Vec2::ZERO;
 }
 
-void FUISprite::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags)
+void FUISprite::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     if (_texture == _empty)
         return;
 
     if (_fillMethod == FillMethod::None)
-        Sprite::draw(renderer, transform, flags);
+        Sprite::draw(rctx, rctx1);
     else
     {
 #if COCOS2D_VERSION >= 0x00040000

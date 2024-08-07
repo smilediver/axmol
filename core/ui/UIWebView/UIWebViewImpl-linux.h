@@ -72,7 +72,7 @@ public:
     void evaluateJS(std::string_view js);
     void setScalesPageToFit(const bool scalesPageToFit);
 
-    virtual void draw(ax::Renderer* renderer, ax::Mat4 const& transform, uint32_t flags);
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1);
     virtual void setVisible(bool visible);
 
     void setBounces(bool bounces);

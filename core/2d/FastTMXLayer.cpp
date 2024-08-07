@@ -129,13 +129,14 @@ FastTMXLayer::~FastTMXLayer()
     }
 }
 
-void FastTMXLayer::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void FastTMXLayer::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     updateTotalQuads();
 
     auto cam = Camera::getVisitingCamera();
-    if (flags != 0 || _dirty || _quadsDirty || !_cameraPositionDirty.fuzzyEquals(cam->getPosition(), _tileSet->_tileSize.x) ||
-        _cameraZoomDirty != cam->getZoom())
+    // TODO: rctx optimize
+    //if (flags != 0 || _dirty || _quadsDirty || !_cameraPositionDirty.fuzzyEquals(cam->getPosition(), _tileSet->_tileSize.x) ||
+    //    _cameraZoomDirty != cam->getZoom())
     {
         _cameraPositionDirty = cam->getPosition();
         auto zoom            = _cameraZoomDirty = cam->getZoom();
@@ -150,7 +151,7 @@ void FastTMXLayer::draw(Renderer* renderer, const Mat4& transform, uint32_t flag
         rect.size.x += s.x * zoom / 2 + _tileSet->_tileSize.x * zoom;
         rect.size.y += s.y * zoom / 2 + _tileSet->_tileSize.y * zoom;
 
-        Mat4 inv = transform;
+        Mat4 inv = _modelViewTransform;
         inv.inverse();
         rect = RectApplyTransform(rect, inv);
 
@@ -160,8 +161,8 @@ void FastTMXLayer::draw(Renderer* renderer, const Mat4& transform, uint32_t flag
         _dirty = false;
     }
 
-    const auto& projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Mat4 finalMat             = projectionMat * _modelViewTransform;
+    Mat4 finalMat = rctx.viewProjectionTransform * _modelViewTransform;
+    auto renderer = rctx.renderer;
     for (const auto& e : _customCommands)
     {
         if (e.second->getIndexDrawCount() > 0)
@@ -439,7 +440,7 @@ void FastTMXLayer::updatePrimitives()
         {
             auto command = new CustomCommand();
             command->setVertexBuffer(_vertexBuffer);
-  
+
 #ifdef AX_FAST_TILEMAP_32_BIT_INDICES
             CustomCommand::IndexFormat indexFormat = CustomCommand::IndexFormat::U_INT;
 #else
@@ -906,11 +907,11 @@ void FastTMXLayer::setupTileSprite(Sprite* sprite, const Vec2& pos, uint32_t gid
 {
     auto tempPosAt = getPositionAt(pos);
     auto tempSpriteContentSize = sprite->getContentSize();
-    
+
     sprite->setPositionZ((float)getVertexZForPos(pos));
     sprite->setOpacity(this->getOpacity());
 
-    // fix issue #1283 too;  put the anchor in the middle for ease of rotation. 
+    // fix issue #1283 too;  put the anchor in the middle for ease of rotation.
     sprite->setAnchorPoint(Vec2(0.5f, 0.5f));
     sprite->setPosition(tempPosAt.x + std::roundf(tempSpriteContentSize.height / 2),
                         tempPosAt.y + std::roundf(tempSpriteContentSize.width / 2));

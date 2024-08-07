@@ -2,7 +2,7 @@
  Copyright (c) 2014-2016 Chukong Technologies Inc.
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -131,10 +131,10 @@ void WebView::setScalesPageToFit(bool const scalesPageToFit)
     _impl->setScalesPageToFit(scalesPageToFit);
 }
 
-void WebView::draw(ax::Renderer* renderer, ax::Mat4 const& transform, uint32_t flags)
+void WebView::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
-    ax::ui::Widget::draw(renderer, transform, flags);
-    _impl->draw(renderer, transform, flags);
+    ax::ui::Widget::draw(rctx, rctx1);
+    _impl->draw(rctx, rctx1);
 }
 
 void WebView::setVisible(bool visible)

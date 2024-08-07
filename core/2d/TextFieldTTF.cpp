@@ -73,10 +73,7 @@ bool TextFieldDelegate::onTextFieldDeleteBackward(TextFieldTTF* /*sender*/, cons
     return false;
 }
 
-bool TextFieldDelegate::onVisit(TextFieldTTF* /*sender*/,
-                                Renderer* /*renderer*/,
-                                const Mat4& /*transform*/,
-                                uint32_t /*flags*/)
+bool TextFieldDelegate::onVisit(TextFieldTTF* sender, const RenderContext& rctx, RenderArg1& rctx1)
 {
     return false;
 }
@@ -456,13 +453,13 @@ void TextFieldTTF::setTextColor(const Color4B& color)
     }
 }
 
-void TextFieldTTF::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void TextFieldTTF::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    if (_delegate && _delegate->onVisit(this, renderer, parentTransform, parentFlags))
+    if (_delegate && _delegate->onVisit(this, rctx, rctx1))
     {
         return;
     }
-    Label::visit(renderer, parentTransform, parentFlags);
+    Label::visit(rctx, rctx1);
 }
 
 void TextFieldTTF::update(float delta)

@@ -199,7 +199,7 @@ Mesh* Mesh::create(const std::vector<float>& positions,
     int perVertexSizeInFloat = 0;
     std::vector<float> vertices;
     std::vector<MeshVertexAttrib> attribs;
-    
+
     MeshVertexAttrib att;
     att.type = backend::VertexFormat::FLOAT3;
 
@@ -425,7 +425,7 @@ Material* Mesh::getMaterial() const
     return _material;
 }
 
-void Mesh::draw(Renderer* renderer,
+void Mesh::draw(const RenderContext& rctx,
                 float globalZOrder,
                 const Mat4& transform,
                 uint32_t flags,

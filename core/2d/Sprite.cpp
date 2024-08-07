@@ -327,7 +327,7 @@ bool Sprite::initWithImageData(const Data& imageData, std::string_view key)
     //_fileName = filename;
 
     Texture2D *texture = _director->getTextureCache()->addImage(imageData, key);
-    
+
     if (texture)
     {
         Rect rect = Rect::ZERO;
@@ -397,7 +397,6 @@ bool Sprite::setProgramState(backend::ProgramState* programState, bool ownPS/* =
 
         setVertexLayout();
         updateProgramStateTexture(_texture);
-        setMVPMatrixUniform();
         return true;
     }
     return false;
@@ -1062,13 +1061,12 @@ void Sprite::updateTransform()
 }
 
 // draw
-void Sprite::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void Sprite::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_texture == nullptr || _texture->getBackendTexture() == nullptr)
         return;
 
-    // TODO: arnold: current camera can be a non-default one.
-    setMVPMatrixUniform();
+    setMVPMatrixUniform(rctx.viewProjectionTransform);
 
 #if AX_USE_CULLING
     // Don't calculate the culling if the transform was not updated
@@ -1077,18 +1075,21 @@ void Sprite::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
     if (visitingCamera == nullptr)
         _insideBounds = true;
     else if (visitingCamera == defaultCamera)
-        _insideBounds = ((flags & FLAGS_TRANSFORM_DIRTY) || visitingCamera->isViewProjectionUpdated())
-                            ? renderer->checkVisibility(transform, _contentSize)
-                            : _insideBounds;
+        // TODO: rctx
+        // _insideBounds = ((flags & FLAGS_TRANSFORM_DIRTY) || visitingCamera->isViewProjectionUpdated())
+        //                     ? rctx.renderer->checkVisibility(transform, _contentSize)
+        //                     : _insideBounds;
+        _insideBounds = rctx.renderer->checkVisibility(_modelViewTransform, _contentSize);
     else
         // XXX: this always return true since
-        _insideBounds = renderer->checkVisibility(transform, _contentSize);
+        _insideBounds = rctx.renderer->checkVisibility(_modelViewTransform, _contentSize);
 
     if (_insideBounds)
 #endif
     {
-        _trianglesCommand.init(_globalZOrder, _texture, _blendFunc, _polyInfo.triangles, transform, flags);
-        renderer->addCommand(&_trianglesCommand);
+        // TODO: rctx flags
+        _trianglesCommand.init(_globalZOrder, _texture, _blendFunc, _polyInfo.triangles, _modelViewTransform, 0);
+        rctx.renderer->addCommand(&_trianglesCommand);
 
 #if AX_SPRITE_DEBUG_DRAW
         _debugDrawNode->clear();
@@ -1717,12 +1718,11 @@ void Sprite::setPolygonInfo(const PolygonInfo& info)
     _renderMode = RenderMode::POLYGON;
 }
 
-void Sprite::setMVPMatrixUniform()
+void Sprite::setMVPMatrixUniform(const ax::Mat4& mvp)
 {
-    const auto& projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto programState         = _trianglesCommand.getPipelineDescriptor().programState;
+    auto programState = _trianglesCommand.getPipelineDescriptor().programState;
     if (programState && _mvpMatrixLocation)
-        programState->setUniform(_mvpMatrixLocation, projectionMat.m, sizeof(projectionMat.m));
+        programState->setUniform(_mvpMatrixLocation, &mvp, sizeof(mvp.m));
 }
 
 NS_AX_END

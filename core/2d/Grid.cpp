@@ -186,13 +186,14 @@ void GridBase::set2DProjection()
     Director* director = Director::getInstance();
     Vec2 size          = director->getWinSizeInPixels();
 
-    director->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-
-    Mat4 orthoMatrix;
-    Mat4::createOrthographicOffCenter(0, size.width, 0, size.height, -1, 1, &orthoMatrix);
-    director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
-
-    director->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    // TODO: rctx matrix
+    // director->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    //
+    // Mat4 orthoMatrix;
+    // Mat4::createOrthographicOffCenter(0, size.width, 0, size.height, -1, 1, &orthoMatrix);
+    // director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
+    //
+    // director->loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void GridBase::setGridRect(const ax::Rect& rect)
@@ -381,10 +382,12 @@ void Grid3D::blit()
     updateVertexBuffer();
     _drawCommand.init(0, _blendFunc);
     Director::getInstance()->getRenderer()->addCommand(&_drawCommand);
-    ax::Mat4 projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto programState           = _drawCommand.getPipelineDescriptor().programState;
-    programState->setUniform(_mvpMatrixLocation, projectionMat.m, sizeof(projectionMat.m));
-    programState->setTexture(_textureLocation, 0, _texture->getBackendTexture());
+    // TODO: rctx matrix
+    assert(false);
+    // ax::Mat4 projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    // auto programState           = _drawCommand.getPipelineDescriptor().programState;
+    // programState->setUniform(_mvpMatrixLocation, projectionMat.m, sizeof(projectionMat.m));
+    // programState->setTexture(_textureLocation, 0, _texture->getBackendTexture());
 }
 
 void Grid3D::calculateVertexPoints()
@@ -629,12 +632,14 @@ TiledGrid3D* TiledGrid3D::create(const Vec2& gridSize, Texture2D* texture, bool 
 
 void TiledGrid3D::blit()
 {
-    updateVertexBuffer();
-    Director::getInstance()->getRenderer()->addCommand(&_drawCommand);
-    ax::Mat4 projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto programState           = _drawCommand.getPipelineDescriptor().programState;
-    programState->setUniform(_mvpMatrixLocation, projectionMat.m, sizeof(projectionMat.m));
-    programState->setTexture(_textureLocation, 0, _texture->getBackendTexture());
+    // TODO: rctx matrix
+    assert(false);
+    // updateVertexBuffer();
+    // Director::getInstance()->getRenderer()->addCommand(&_drawCommand);
+    // ax::Mat4 projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    // auto programState           = _drawCommand.getPipelineDescriptor().programState;
+    // programState->setUniform(_mvpMatrixLocation, projectionMat.m, sizeof(projectionMat.m));
+    // programState->setTexture(_textureLocation, 0, _texture->getBackendTexture());
 }
 
 void TiledGrid3D::calculateVertexPoints()

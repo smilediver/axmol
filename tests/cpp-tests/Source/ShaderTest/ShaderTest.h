@@ -144,7 +144,7 @@ public:
 
     virtual void update(float dt) override;
     virtual void setPosition(const ax::Vec2& newPosition) override;
-    virtual void draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags) override;
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1) override;
 
 protected:
     ShaderNode();

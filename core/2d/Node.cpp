@@ -1005,13 +1005,13 @@ void Node::addChildHelper(Node* child, int localZOrder, int tag, std::string_vie
     this->insertChild(child, localZOrder);
 
     child->setParent(this);
-    
+
     if (_childFollowCameraMask)
     {
         child->setCameraMask(this->getCameraMask());
         child->applyMaskOnEnter(true);
     }
-    
+
     if (setTag)
     {
         child->setTag(tag);
@@ -1215,50 +1215,64 @@ void Node::sortAllChildren()
 
 void Node::draw()
 {
-    auto renderer = _director->getRenderer();
-    draw(renderer, _modelViewTransform, FLAGS_TRANSFORM_DIRTY);
+    assert(false);
+    // TODO: rctx
+    // auto renderer = _director->getRenderer();
+    // draw(renderer, _modelViewTransform, FLAGS_TRANSFORM_DIRTY);
 }
 
-void Node::draw(Renderer* /*renderer*/, const Mat4& /*transform*/, uint32_t /*flags*/) {}
+void Node::draw(const RenderContext& rctx, RenderArg1& rctx1) {}
 
 void Node::visit()
 {
-    auto renderer         = _director->getRenderer();
-    auto& parentTransform = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    visit(renderer, parentTransform, FLAGS_TRANSFORM_DIRTY);
+    assert(false);
+    // TODO: rctx
+    // auto renderer         = _director->getRenderer();
+    // auto& parentTransform = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    // visit(rctx, parentTransform, FLAGS_TRANSFORM_DIRTY);
 }
 
-uint32_t Node::processParentFlags(const Mat4& parentTransform, uint32_t parentFlags)
+// TODO: rctx
+void Node::processParentFlags() const
 {
+    auto& self = *const_cast<Node*>(this);
+
     if (_usingNormalizedPosition)
     {
         AXASSERT(_parent, "setPositionNormalized() doesn't work with orphan nodes");
-        if ((parentFlags & FLAGS_CONTENT_SIZE_DIRTY) || _normalizedPositionDirty)
+        if (_normalizedPositionDirty)
         {
             auto& s           = _parent->getContentSize();
-            _position.x       = _normalizedPosition.x * s.width;
-            _position.y       = _normalizedPosition.y * s.height;
-            _transformUpdated = _transformDirty = _inverseDirty = true;
-            _normalizedPositionDirty                            = false;
+            self._position.x       = _normalizedPosition.x * s.width;
+            self._position.y       = _normalizedPosition.y * s.height;
+            self._transformUpdated = _transformDirty = _inverseDirty = true;
+            self._normalizedPositionDirty                            = false;
         }
     }
 
-    // Fixes Github issue #16100. Basically when having two cameras, one camera might set as dirty the
-    // node that is not visited by it, and might affect certain calculations. Besides, it is faster to do this.
-    if (!isVisitableByVisitingCamera())
-        return parentFlags;
+    // TODO: rctx
+    // // Fixes Github issue #16100. Basically when having two cameras, one camera might set as dirty the
+    // // node that is not visited by it, and might affect certain calculations. Besides, it is faster to do this.
+    // if (!isVisitableByVisitingCamera())
+    //     return parentFlags;
 
-    uint32_t flags = parentFlags;
-    flags |= (_transformUpdated ? FLAGS_TRANSFORM_DIRTY : 0);
-    flags |= (_contentSizeDirty ? FLAGS_CONTENT_SIZE_DIRTY : 0);
+    // TODO: rctx
+    // uint32_t flags = parentFlags;
+    // flags |= (_transformUpdated ? FLAGS_TRANSFORM_DIRTY : 0);
+    // flags |= (_contentSizeDirty ? FLAGS_CONTENT_SIZE_DIRTY : 0);
+    bool updateWorldTransform = _transformUpdated || _contentSizeDirty;
 
-    if (flags & FLAGS_DIRTY_MASK)
-        _modelViewTransform = this->transform(parentTransform);
+    // TODO: rctx
+    // if (flags & FLAGS_DIRTY_MASK)
+    //     _modelViewTransform = this->transform(parentTransform);
+    if (updateWorldTransform)
+        self._modelViewTransform = self.transform(getParentWorldTransform());
 
-    _transformUpdated = false;
-    _contentSizeDirty = false;
+    self._transformUpdated = false;
+    self._contentSizeDirty = false;
 
-    return flags;
+    // TODO: rctx
+    // return flags;
 }
 
 bool Node::isVisitableByVisitingCamera() const
@@ -1268,7 +1282,7 @@ bool Node::isVisitableByVisitingCamera() const
     return visibleByCamera;
 }
 
-void Node::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Node::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -1276,13 +1290,7 @@ void Node::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t paren
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
-
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    processParentFlags();
 
     bool visibleByCamera = isVisitableByVisitingCamera();
 
@@ -1297,23 +1305,21 @@ void Node::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t paren
             auto node = _children.at(i);
 
             if (node && node->_localZOrder < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
         // self draw
         if (visibleByCamera)
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-            (*it)->visit(renderer, _modelViewTransform, flags);
+            (*it)->visit(rctx, rctx1);
     }
     else if (visibleByCamera)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
     }
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
     // FIX ME: Why need to set _orderOfArrival to 0??
     // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920
@@ -1945,6 +1951,19 @@ void Node::setWorldPosition(const Vec2& position)
         setPosition(Vec2(v.x, v.y));
     }
     else setPosition(position);
+}
+
+const Mat4& Node::getParentWorldTransform() const
+{
+    if (_parent)
+    {
+        _parent->processParentFlags();
+        return _parent->_modelViewTransform;
+    }
+    else
+    {
+        return Mat4::IDENTITY;
+    }
 }
 
 void Node::updateTransform()

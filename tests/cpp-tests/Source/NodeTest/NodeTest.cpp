@@ -948,7 +948,7 @@ public:
         return sprite;
     }
     bool setProgramState(backend::ProgramState* programState, bool ownPS = false) override;
-    virtual void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override;
+    virtual void draw(const RenderContext& rctx, RenderArg1& rctx1) override;
 
 protected:
     CustomCommand _customCommand;
@@ -970,14 +970,14 @@ bool MySprite::setProgramState(backend::ProgramState* programState, bool ownPS/*
     return false;
 }
 
-void MySprite::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void MySprite::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     const auto& projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto mvpMatrix            = projectionMat * transform;
+    auto mvpMatrix            = projectionMat * _modelViewTransform;
     _customCommand.getPipelineDescriptor().programState->setUniform(_mvpMatrixLocation, mvpMatrix.m,
                                                                     sizeof(mvpMatrix.m));
-    _customCommand.init(_globalZOrder, transform, flags);
-    renderer->addCommand(&_customCommand);
+    _customCommand.init(_globalZOrder, _modelViewTransform, 0);
+    rctx.renderer->addCommand(&_customCommand);
 }
 
 //------------------------------------------------------------------

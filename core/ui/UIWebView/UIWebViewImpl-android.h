@@ -2,7 +2,7 @@
  Copyright (c) 2014-2016 Chukong Technologies Inc.
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -88,7 +88,7 @@ public:
 
     void setScalesPageToFit(const bool scalesPageToFit);
 
-    virtual void draw(ax::Renderer* renderer, ax::Mat4 const& transform, uint32_t flags);
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1);
 
     virtual void setVisible(bool visible);
 

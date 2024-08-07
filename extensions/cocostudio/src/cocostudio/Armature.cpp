@@ -408,17 +408,17 @@ void Armature::draw(ax::Renderer* renderer, const Mat4& transform, uint32_t flag
                         skin->setBlendFunc(_blendFunc);
                     }
                 }
-                skin->draw(renderer, transform, flags);
+                skin->draw(rctx, rctx1);
             }
             break;
             case CS_DISPLAY_ARMATURE:
             {
-                node->draw(renderer, transform, flags);
+                node->draw(rctx, rctx1);
             }
             break;
             default:
             {
-                node->visit(renderer, transform, flags);
+                node->visit(rctx, rctx1);
                 //                AX_NODE_DRAW_SETUP();
             }
             break;
@@ -426,7 +426,7 @@ void Armature::draw(ax::Renderer* renderer, const Mat4& transform, uint32_t flag
         }
         else if (Node* node = dynamic_cast<Node*>(object))
         {
-            node->visit(renderer, transform, flags);
+            node->visit(rctx, rctx1);
             //            AX_NODE_DRAW_SETUP();
         }
     }
@@ -444,7 +444,7 @@ void Armature::onExit()
     unscheduleUpdate();
 }
 
-void Armature::visit(ax::Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Armature::visit(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -452,7 +452,7 @@ void Armature::visit(ax::Renderer* renderer, const Mat4& parentTransform, uint32
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
     if (isVisitableByVisitingCamera())
     {
@@ -465,7 +465,7 @@ void Armature::visit(ax::Renderer* renderer, const Mat4& parentTransform, uint32
         director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
 
         sortAllChildren();
-        draw(renderer, _modelViewTransform, flags);
+        draw(rctx, rctx1);
 
         // FIX ME: Why need to set _orderOfArrival to 0??
         // Please refer to https://github.com/cocos2d/cocos2d-x/pull/6920

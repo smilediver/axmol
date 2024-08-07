@@ -608,7 +608,7 @@ void ScrollView::onBeforeDraw()
 
 void ScrollView::afterDraw()
 {
-    
+
      Director::getInstance()->getRenderer()->addCallbackCommand(AX_CALLBACK_0(ScrollView::onAfterDraw, this),
                                                                 _globalZOrder);
 }
@@ -623,18 +623,18 @@ void ScrollView::onAfterDraw()
     if (_clippingToBounds)
     {
         auto glview = Director::getInstance()->getGLView();
-        
+
         if (_scissorRestored) {//restore the parent's scissor rect
             glview->setScissorInPoints(_parentScissorRect.origin.x, _parentScissorRect.origin.y, _parentScissorRect.size.width, _parentScissorRect.size.height);
         }
         else {
             Director::getInstance()->getRenderer()->setScissorTest(false);
         }
-        
+
     }
 }
 
-void ScrollView::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void ScrollView::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quick return if not visible
     if (!isVisible())
@@ -642,15 +642,7 @@ void ScrollView::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
-
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    Director* director = Director::getInstance();
-    AXASSERT(nullptr != director, "Director is null when setting matrix stack");
-    director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    processParentFlags();
 
     this->beforeDraw();
     bool visibleByCamera = isVisitableByVisitingCamera();
@@ -665,7 +657,7 @@ void ScrollView::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t
             Node* child = _children.at(i);
             if (child->getLocalZOrder() < 0)
             {
-                child->visit(renderer, _modelViewTransform, flags);
+                child->visit(rctx, rctx1);
             }
             else
             {
@@ -675,23 +667,21 @@ void ScrollView::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t
 
         // this draw
         if (visibleByCamera)
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
 
         // draw children zOrder >= 0
         for (; i < _children.size(); i++)
         {
             Node* child = _children.at(i);
-            child->visit(renderer, _modelViewTransform, flags);
+            child->visit(rctx, rctx1);
         }
     }
     else if (visibleByCamera)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
     }
 
     this->afterDraw();
-
-    director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 bool ScrollView::onTouchBegan(Touch* touch, Event* /*event*/)

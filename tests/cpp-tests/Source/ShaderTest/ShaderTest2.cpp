@@ -114,7 +114,7 @@ public:
         std::sort(std::begin(_effects), std::end(_effects), tuple_sort);
     }
 
-    void draw(Renderer* renderer, const Mat4& transform, uint32_t flags) override
+    void draw(const RenderContext& rctx, RenderArg1& rctx1) override
     {
 #if AX_USE_CULLING
         // Don't do calculate the culling if the transform was not updated

@@ -207,15 +207,24 @@ void Scene::render(Renderer* renderer, const Mat4& eyeTransform, const Mat4* eye
             camera->setAdditionalProjection(*eyeProjection * camera->getProjectionMatrix().getInversed());
 
         camera->setAdditionalTransform(eyeTransform.getInversed());
-        _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-        _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION,
-                              Camera::_visitingCamera->getViewProjectionMatrix());
 
         camera->apply();
         // clear background with max depth
         camera->clearBackground();
+
+        auto rctx = RenderContext
+        {
+            .renderer = renderer,
+            .viewProjectionTransform = camera->getViewProjectionMatrix(),
+            .viewTransform = camera->getViewMatrix(),
+            .viewInverseTransform = camera->getViewMatrix().getInversed(),
+        };
+
+        auto rctx1 = RenderArg1{};
+
         // visit the scene
-        visit(renderer, transform, 0);
+        visit(rctx, rctx1);
+
 #if defined(AX_ENABLE_NAVMESH)
         if (_navMesh && _navMeshDebugCamera == camera)
         {
@@ -223,9 +232,7 @@ void Scene::render(Renderer* renderer, const Mat4& eyeTransform, const Mat4* eye
         }
 #endif
 
-        renderer->render();
-
-        _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+        rctx.renderer->render();
 
         // we shouldn't restore the transform matrix since it could be used
         // from "update" or other parts of the game to calculate culling or something else.
@@ -259,9 +266,9 @@ void Scene::render(Renderer* renderer, const Mat4& eyeTransform, const Mat4* eye
     Camera::_visitingCamera = nullptr;
 }
 
-void Scene::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Scene::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    Node::visit(renderer, parentTransform, parentFlags);
+    Node::visit(rctx, rctx1);
 }
 
 void Scene::visit()
@@ -276,17 +283,19 @@ void Scene::visit()
         Camera::_visitingCamera = camera;
 
         camera->setAdditionalTransform(eyeTransform.getInversed());
-        _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-        _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION,
-                              Camera::_visitingCamera->getViewProjectionMatrix());
-
-        camera->apply();
-        // clear background with max depth
-        camera->clearBackground();
-        // visit the scene
-        Node::visit();
-
-        _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+        // TODO: rctx matrix
+        // assert(false)
+        // _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+        // _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION,
+        //                       Camera::_visitingCamera->getViewProjectionMatrix());
+        //
+        // camera->apply();
+        // // clear background with max depth
+        // camera->clearBackground();
+        // // visit the scene
+        // Node::visit();
+        //
+        // _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
     }
 
     Camera::_visitingCamera = nullptr;

@@ -522,7 +522,7 @@ RenderTextureTestDepthStencil::~RenderTextureTestDepthStencil()
     _renderer->setStencilTest(bitmask::any(_dsDesc.flags, DepthStencilFlags::STENCIL_TEST));
 }
 
-void RenderTextureTestDepthStencil::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void RenderTextureTestDepthStencil::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _rtx->beginWithClear(0, 0, 0, 0, 0, 0);
 
@@ -697,7 +697,7 @@ SpriteRenderTextureBug::SimpleSprite* SpriteRenderTextureBug::SimpleSprite::crea
     return sprite;
 }
 
-void SpriteRenderTextureBug::SimpleSprite::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void SpriteRenderTextureBug::SimpleSprite::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_rt == nullptr)
     {
@@ -708,7 +708,7 @@ void SpriteRenderTextureBug::SimpleSprite::draw(Renderer* renderer, const Mat4& 
     _rt->beginWithClear(0.0f, 0.0f, 0.0f, 1.0f);
     _rt->end();
 
-    Sprite::draw(renderer, transform, flags);
+    Sprite::draw(rctx, rctx1);
 }
 
 SpriteRenderTextureBug::SpriteRenderTextureBug()

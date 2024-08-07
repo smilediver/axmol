@@ -393,19 +393,22 @@ void MotionStreak3D::reset()
     _nuPoints = 0;
 }
 
-void MotionStreak3D::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void MotionStreak3D::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_nuPoints <= 1)
         return;
+
+    auto renderer = _director->getRenderer();
     auto beforeCommand = renderer->nextCallbackCommand();
     auto afterCommand = renderer->nextCallbackCommand();
 
     beforeCommand->init(_globalZOrder);
     afterCommand->init(_globalZOrder);
-    _customCommand.init(_globalZOrder, transform, flags);
+    // TODO: rctx flags
+    // _customCommand.init(_globalZOrder, transform, flags);
+    _customCommand.init(_globalZOrder, _modelViewTransform, 0);
 
-    auto pmatrix   = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto mvpMatrix = pmatrix * transform;
+    auto mvpMatrix = rctx.viewProjectionTransform * _modelViewTransform;
 
     _programState->setUniform(_locMVP, mvpMatrix.m, sizeof(mvpMatrix.m));
 

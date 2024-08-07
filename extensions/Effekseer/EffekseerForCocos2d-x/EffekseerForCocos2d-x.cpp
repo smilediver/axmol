@@ -700,7 +700,7 @@ void EffectEmitter::draw(cocos2d::Renderer* renderer, const cocos2d::Mat4& paren
     if (!manager->getInternalManager()->GetShown(handle) ||
         manager->getInternalManager()->GetTotalInstanceCount() < 1)
         return; // nothing to draw
-            
+
 #ifdef AX_USE_METAL
     if (!manager->isDistorted)
     {
@@ -710,7 +710,7 @@ void EffectEmitter::draw(cocos2d::Renderer* renderer, const cocos2d::Mat4& paren
 #endif
 
     auto renderCommand = renderer->nextCallbackCommand();
-    
+
 	renderCommand->init(_globalZOrder);
 
 	auto renderer2d = manager->getInternalRenderer();
@@ -734,7 +734,7 @@ void EffectEmitter::draw(cocos2d::Renderer* renderer, const cocos2d::Mat4& paren
 		renderer->addDrawnVertices(renderer2d->GetDrawVertexCount());
 		renderer2d->ResetDrawCallCount();
 		renderer2d->ResetDrawVertexCount();
-        
+
         #ifdef AX_USE_METAL
         afterRender(renderer2d, commandList);
         #endif
@@ -743,7 +743,7 @@ void EffectEmitter::draw(cocos2d::Renderer* renderer, const cocos2d::Mat4& paren
 
 	renderer->addCommand(renderCommand);
 
-	cocos2d::Node::draw(renderer, parentTransform, parentFlags);
+	cocos2d::Node::draw(rctx, rctx1);
 }
 
 ::Effekseer::Handle EffectManager::play(Effect* effect, float x, float y, float z)
@@ -892,7 +892,7 @@ void EffectManager::begin(cocos2d::Renderer* renderer, float globalZOrder)
 		manager2d->Draw();
 
 	};
-	
+
 
 
 

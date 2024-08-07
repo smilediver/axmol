@@ -86,21 +86,6 @@ struct TextureSamplerFlag
 };
 
 /**
- * @brief Matrix stack type.
- */
-enum class MATRIX_STACK_TYPE
-{
-    /// Model view matrix stack
-    MATRIX_STACK_MODELVIEW,
-
-    /// projection matrix stack
-    MATRIX_STACK_PROJECTION,
-
-    /// texture matrix stack
-    MATRIX_STACK_TEXTURE
-};
-
-/**
  * @brief Anchor presets used to position nodes in corners
  */
 enum class AnchorPreset

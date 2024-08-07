@@ -314,7 +314,7 @@ void DrawNodeEx::updateUniforms(const Mat4& transform, CustomCommand& cmd)
     pipelineDescriptor.programState->setUniform(alphaUniformLocation, &alpha, sizeof(alpha));
 }
 
-void DrawNodeEx::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void DrawNodeEx::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_bufferCountTriangle)
     {
@@ -595,7 +595,7 @@ void DrawNodeEx::drawStar(const Vec2& center,
 }
 
 void DrawNodeEx::drawSolidStar(const Vec2& center,
-    float radiusI, // inner 
+    float radiusI, // inner
     float radiusO, // outer
     unsigned int segments,
     const Color4B& color,
@@ -787,7 +787,7 @@ void DrawNodeEx::drawSegment(const Vec2& from, const Vec2& to, float radius, con
     ensureCapacityTriangle(vertex_count);
     V2F_C4B_T2F_Triangle* triangles = (V2F_C4B_T2F_Triangle*)(_bufferTriangle + _bufferCountTriangle);
 
-    // 
+    //
     Color4B col = color;
     // End
     switch (etEnd)
@@ -1135,7 +1135,7 @@ float DrawNodeEx::getLineWidth()
     return this->_lineWidth;
 }
 
-void DrawNodeEx::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void DrawNodeEx::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_isolated)
     {
@@ -1144,7 +1144,7 @@ void DrawNodeEx::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t
     }
     else
     {
-        Node::visit(renderer, parentTransform, parentFlags);
+        Node::visit(rctx, rctx1);
     }
 }
 

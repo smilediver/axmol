@@ -808,7 +808,7 @@ void MeshRenderer::removeAllAttachNode()
     _attachments.clear();
 }
 
-void MeshRenderer::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform, uint32_t parentFlags)
+void MeshRenderer::visit(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -816,12 +816,9 @@ void MeshRenderer::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
-    flags |= FLAGS_RENDER_AS_3D;
-
-    //
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    processParentFlags();
+    // TODO: rctx flags
+    // flags |= FLAGS_RENDER_AS_3D;
 
     bool visibleByCamera = isVisitableByVisitingCamera();
 
@@ -836,26 +833,24 @@ void MeshRenderer::visit(ax::Renderer* renderer, const ax::Mat4& parentTransform
             auto node = _children.at(i);
 
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
         // self draw
         if (visibleByCamera)
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-            (*it)->visit(renderer, _modelViewTransform, flags);
+            (*it)->visit(rctx, rctx1);
     }
     else if (visibleByCamera)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
     }
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
-void MeshRenderer::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void MeshRenderer::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
 #if AX_USE_CULLING
     // TODO new-renderer: interface isVisibleInFrustum removal
@@ -893,7 +888,9 @@ void MeshRenderer::draw(Renderer* renderer, const Mat4& transform, uint32_t flag
 
     for (auto&& mesh : _meshes)
     {
-        mesh->draw(renderer, _globalZOrder, transform, flags, _lightMask, Vec4(color.r, color.g, color.b, color.a),
+        // TODO: rctx flags
+        // mesh->draw(rctx, _globalZOrder, transform, flags, _lightMask, Vec4(color.r, color.g, color.b, color.a),
+        mesh->draw(rctx, _globalZOrder, _modelViewTransform, 0, _lightMask, Vec4(color.r, color.g, color.b, color.a),
                    _forceDepthWrite, _wireframe);
     }
 }

@@ -133,11 +133,11 @@ void Skybox::initBuffers()
     _customCommand.updateIndexBuffer(&idxBuf[0], sizeof(idxBuf));
 }
 
-void Skybox::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void Skybox::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder);
 
-    renderer->addCommand(&_customCommand);
+    rctx.renderer->addCommand(&_customCommand);
 
     auto camera = Camera::getVisitingCamera();
 

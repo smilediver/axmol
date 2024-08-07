@@ -668,18 +668,18 @@ void ParticleSystemQuad::updateParticleQuads()
 }
 
 // overriding draw method
-void ParticleSystemQuad::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void ParticleSystemQuad::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quad command
     if (_particleCount > 0)
     {
         auto programState = _quadCommand.getPipelineDescriptor().programState;
+        programState->setUniform(_mvpMatrixLocaiton, rctx.viewProjectionTransform.m, sizeof(rctx.viewProjectionTransform.m));
 
-        ax::Mat4 projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-        programState->setUniform(_mvpMatrixLocaiton, projectionMat.m, sizeof(projectionMat.m));
-
-        _quadCommand.init(_globalZOrder, _texture, _blendFunc, _quads, _particleCount, transform, flags);
-        renderer->addCommand(&_quadCommand);
+        // TODO: rctx flags
+        // _quadCommand.init(_globalZOrder, _texture, _blendFunc, _quads, _particleCount, transform, flags);
+        _quadCommand.init(_globalZOrder, _texture, _blendFunc, _quads, _particleCount, _modelViewTransform, 0);
+        rctx.renderer->addCommand(&_quadCommand);
     }
 }
 

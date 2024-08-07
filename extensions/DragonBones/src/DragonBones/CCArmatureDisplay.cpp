@@ -166,7 +166,7 @@ bool DBCCSprite::_checkVisibility(const ax::Mat4& transform, const ax::Size& siz
     return ret;
 }
 
-void DBCCSprite::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags)
+void DBCCSprite::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
 #if AX_USE_CULLING
 #    if COCOS2D_VERSION >= 0x00031400

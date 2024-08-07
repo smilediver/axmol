@@ -2,7 +2,7 @@
 Copyright (c) 2015-2016 Chukong Technologies Inc.
 Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
 https://axmol.dev/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -119,7 +119,7 @@ bool Terrain::initProperties()
     return true;
 }
 
-void Terrain::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags)
+void Terrain::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     auto modelMatrix = getNodeToWorldTransform();
     if (memcmp(&modelMatrix, &_terrainModelMatrix, sizeof(Mat4)) != 0)
@@ -128,8 +128,7 @@ void Terrain::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t f
         _quadRoot->preCalculateAABB(_terrainModelMatrix);
     }
 
-    auto& projectionMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto finalMatrix       = projectionMatrix * transform;
+    auto finalMatrix = rctx.viewProjectionTransform * _modelViewTransform;
     _programState->setUniform(_mvpMatrixLocation, &finalMatrix.m, sizeof(finalMatrix.m));
 
     _programState->setUniform(_lightDirLocation, &_lightDir, sizeof(_lightDir));

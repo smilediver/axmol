@@ -25,7 +25,7 @@ public:
     virtual void onEnter();
     virtual void onExit();
 
-    virtual void draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags);
+    virtual void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1);
     void onDraw(const ax::Mat4& transform, uint32_t flags);
 
     void onTouchesBegan(const std::vector<ax::Touch*>& touches, ax::Event* event);

@@ -137,19 +137,13 @@ void ClippingNode::onExit()
     Node::onExit();
 }
 
-void ClippingNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void ClippingNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (!_visible || !hasContent())
         return;
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
-
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    AXASSERT(nullptr != _director, "Director is null when setting matrix stack");
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    auto renderer = rctx.renderer;
+    processParentFlags();
 
     // Add group command
 
@@ -175,7 +169,7 @@ void ClippingNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32
 
         AX_SAFE_RELEASE_NULL(programState);
     }
-    _stencil->visit(renderer, _modelViewTransform, flags);
+    _stencil->visit(rctx, rctx1);
 
 
     auto afterDrawStencilCmd = renderer->nextCallbackCommand();
@@ -204,20 +198,20 @@ void ClippingNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32
             auto node = _children.at(i);
 
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
         // self draw
         if (visibleByCamera)
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-            (*it)->visit(renderer, _modelViewTransform, flags);
+            (*it)->visit(rctx, rctx1);
     }
     else if (visibleByCamera)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
     }
 
     renderer->popGroup();
@@ -228,14 +222,12 @@ void ClippingNode::visit(Renderer* renderer, const Mat4& parentTransform, uint32
     renderer->addCommand(_afterVisitCmd);
 
     renderer->popGroup();
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void ClippingNode::setGlobalZOrder(float globalZOrder)
 {
     Node::setGlobalZOrder(globalZOrder);
-    
+
     if (_stencil) {
         // Make sure our stencil stays on the same globalZOrder:
         _stencil->setGlobalZOrder(globalZOrder);

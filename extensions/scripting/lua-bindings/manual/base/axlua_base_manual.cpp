@@ -65,7 +65,7 @@
 #include "renderer/TextureCache.h"
 #include "renderer/Shaders.h"
 
-void LuaNode::draw(ax::Renderer* renderer, const ax::Mat4& transform, uint32_t flags)
+void LuaNode::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
 {
     int handler =
         ScriptHandlerMgr::getInstance()->getObjectHandler((void*)this, ScriptHandlerMgr::HandlerType::LUANODE_DRAW);
@@ -2297,7 +2297,7 @@ static int axlua_Node_enumerateChildren(lua_State* tolua_S)
         LUA_FUNCTION handler = toluafix_ref_function(tolua_S, 3, 0);
         auto stack = LuaEngine::getInstance()->getLuaStack();
         cobj->enumerateChildren(name, [=](Node* node) -> bool {
-            
+
             int id     = node ? (int)node->_ID : -1;
             int* luaID = node ? &node->_luaID : nullptr;
             toluafix_pushusertype_object(stack->getLuaState(), id, luaID, (void*)node, "ax.Node");

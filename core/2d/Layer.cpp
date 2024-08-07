@@ -425,14 +425,14 @@ bool LayerRadialGradient::initWithColor(const ax::Color4B& startColor,
     return false;
 }
 
-void LayerRadialGradient::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void LayerRadialGradient::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     _customCommand.init(_globalZOrder, _blendFunc);
-    renderer->addCommand(&_customCommand);
+    rctx.renderer->addCommand(&_customCommand);
 
-    const auto& projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
     auto programState         = _customCommand.getPipelineDescriptor().programState;
-    Mat4 finalMat             = projectionMat * transform;
+    // TODO: rctx test
+    Mat4 finalMat             = rctx.viewProjectionTransform * _modelViewTransform;
     programState->setUniform(_mvpMatrixLocation, finalMat.m, sizeof(finalMat.m));
 
     programState->setUniform(_startColorLocation, &_startColorRend, sizeof(_startColorRend));

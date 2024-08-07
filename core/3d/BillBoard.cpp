@@ -92,7 +92,7 @@ BillBoard* BillBoard::create(Mode mode)
     return nullptr;
 }
 
-void BillBoard::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void BillBoard::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     // quick return if not visible. children won't be drawn.
     if (!_visible)
@@ -106,20 +106,19 @@ void BillBoard::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t 
         return;
     }
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
+    // TODO: rectx flags
     // Add 3D flag so all the children will be rendered as 3D object
-    flags |= FLAGS_RENDER_AS_3D;
+    // flags |= FLAGS_RENDER_AS_3D;
 
+    // TODO: rectx flags
     // Update Billboard transform
-    bool dirty = calculateBillboardTransform();
-    if (dirty)
-    {
-        flags |= FLAGS_TRANSFORM_DIRTY;
-    }
-
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
+    // bool dirty = calculateBillboardTransform();
+    // if (dirty)
+    // {
+    //     flags |= FLAGS_TRANSFORM_DIRTY;
+    // }
 
     int i = 0;
 
@@ -132,23 +131,21 @@ void BillBoard::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t 
             auto node = _children.at(i);
 
             if (node && node->getLocalZOrder() < 0)
-                node->visit(renderer, _modelViewTransform, flags);
+                node->visit(rctx, rctx1);
             else
                 break;
         }
         // self draw
         if (visibleByCamera)
-            this->draw(renderer, _modelViewTransform, flags);
+            this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-            (*it)->visit(renderer, _modelViewTransform, flags);
+            (*it)->visit(rctx, rctx1);
     }
     else if (visibleByCamera)
     {
-        this->draw(renderer, _modelViewTransform, flags);
+        this->draw(rctx, rctx1);
     }
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 bool BillBoard::calculateBillboardTransform()
@@ -233,13 +230,15 @@ bool BillBoard::calculateBillboardTransform()
     return false;
 }
 
-void BillBoard::draw(Renderer* renderer, const Mat4& /*transform*/, uint32_t flags)
+void BillBoard::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
+    // TODO: rectx flags
     // FIXME: frustum culling here
-    flags |= Node::FLAGS_RENDER_AS_3D;
-    _trianglesCommand.init(0, _texture, _blendFunc, _polyInfo.triangles, _modelViewTransform, flags);
-    setMVPMatrixUniform();  // update uniform
-    renderer->addCommand(&_trianglesCommand);
+    // flags |= Node::FLAGS_RENDER_AS_3D;
+    // _trianglesCommand.init(0, _texture, _blendFunc, _polyInfo.triangles, _modelViewTransform, flags);
+    _trianglesCommand.init(0, _texture, _blendFunc, _polyInfo.triangles, _modelViewTransform, 0);
+    setMVPMatrixUniform(rctx.viewProjectionTransform);
+    rctx.renderer->addCommand(&_trianglesCommand);
 }
 
 void BillBoard::setMode(Mode mode)

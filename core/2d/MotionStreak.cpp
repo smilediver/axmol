@@ -408,7 +408,7 @@ void MotionStreak::reset()
     _nuPoints = 0;
 }
 
-void MotionStreak::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+void MotionStreak::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_nuPoints <= 1)
         return;
@@ -417,12 +417,11 @@ void MotionStreak::draw(Renderer* renderer, const Mat4& transform, uint32_t flag
 
     _customCommand.init(_globalZOrder, _blendFunc);
     _customCommand.setVertexDrawInfo(0, drawCount);
-    renderer->addCommand(&_customCommand);
+    rctx.renderer->addCommand(&_customCommand);
 
     auto programState = _customCommand.getPipelineDescriptor().programState;
 
-    const auto& projectionMat = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    Mat4 finalMat             = projectionMat * transform;
+    Mat4 finalMat = rctx.viewProjectionTransform * _modelViewTransform;
     programState->setUniform(_mvpMatrixLocaiton, finalMat.m, sizeof(Mat4));
 
     unsigned int offset     = 0;

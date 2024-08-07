@@ -200,14 +200,16 @@ bool Layout::isClippingEnabled() const
     return _clippingEnabled;
 }
 
-void Layout::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Layout::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (!_visible)
     {
         return;
     }
 
-    if (FLAGS_TRANSFORM_DIRTY & parentFlags || _transformUpdated || _contentSizeDirty)
+    // TODO: rctx flags
+    // if (FLAGS_TRANSFORM_DIRTY & parentFlags || _transformUpdated || _contentSizeDirty)
+    if (_transformUpdated || _contentSizeDirty)
         _clippingRectDirty = true;
 
     adaptRenderers();
@@ -218,10 +220,10 @@ void Layout::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t par
         switch (_clippingType)
         {
         case ClippingType::STENCIL:
-            stencilClippingVisit(renderer, parentTransform, parentFlags);
+            stencilClippingvisit(rctx, rctx1);
             break;
         case ClippingType::SCISSOR:
-            scissorClippingVisit(renderer, parentTransform, parentFlags);
+            scissorClippingvisit(rctx, rctx1);
             break;
         default:
             break;
@@ -230,24 +232,20 @@ void Layout::visit(Renderer* renderer, const Mat4& parentTransform, uint32_t par
     else
     {
         // no need to adapt render again
-        ProtectedNode::visit(renderer, parentTransform, parentFlags);
+        ProtectedNode::visit(rctx, rctx1);
     }
 }
 
-void Layout::stencilClippingVisit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Layout::stencilClippingvisit(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (!_visible)
         return;
 
-    uint32_t flags = processParentFlags(parentTransform, parentFlags);
+    processParentFlags();
 
-    // IMPORTANT:
-    // To ease the migration to v3.0, we still support the Mat4 stack,
-    // but it is deprecated and your code should not rely on it
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
     // Add group command
 
+    auto renderer = rctx.renderer;
     auto* groupCommand = renderer->getNextGroupCommand();
     groupCommand->init(_globalZOrder);
     renderer->addCommand(groupCommand);
@@ -258,7 +256,7 @@ void Layout::stencilClippingVisit(Renderer* renderer, const Mat4& parentTransfor
     //    renderer->addCommand(&_beforeVisitCmdStencil);
     _stencilStateManager->onBeforeVisit(_globalZOrder);
 
-    _clippingStencil->visit(renderer, _modelViewTransform, flags);
+    _clippingStencil->visit(rctx, rctx1);
 
     auto afterDrawStencilCmd = renderer->nextCallbackCommand();
     afterDrawStencilCmd->init(_globalZOrder);
@@ -279,7 +277,7 @@ void Layout::stencilClippingVisit(Renderer* renderer, const Mat4& parentTransfor
         auto node = _children.at(i);
 
         if (node && node->getLocalZOrder() < 0)
-            node->visit(renderer, _modelViewTransform, flags);
+            node->visit(rctx, rctx1);
         else
             break;
     }
@@ -289,7 +287,7 @@ void Layout::stencilClippingVisit(Renderer* renderer, const Mat4& parentTransfor
         auto node = _protectedChildren.at(j);
 
         if (node && node->getLocalZOrder() < 0)
-            node->visit(renderer, _modelViewTransform, flags);
+            node->visit(rctx, rctx1);
         else
             break;
     }
@@ -297,16 +295,16 @@ void Layout::stencilClippingVisit(Renderer* renderer, const Mat4& parentTransfor
     //
     // draw self
     //
-    this->draw(renderer, _modelViewTransform, flags);
+    this->draw(rctx, rctx1);
 
     //
     // draw children and protectedChildren zOrder >= 0
     //
     for (auto it = _protectedChildren.cbegin() + j, itCend = _protectedChildren.cend(); it != itCend; ++it)
-        (*it)->visit(renderer, _modelViewTransform, flags);
+        (*it)->visit(rctx, rctx1);
 
     for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-        (*it)->visit(renderer, _modelViewTransform, flags);
+        (*it)->visit(rctx, rctx1);
 
     auto afterVisitCmdStencil = renderer->nextCallbackCommand();
     afterVisitCmdStencil->init(_globalZOrder);
@@ -314,8 +312,6 @@ void Layout::stencilClippingVisit(Renderer* renderer, const Mat4& parentTransfor
     renderer->addCommand(afterVisitCmdStencil);
 
     renderer->popGroup();
-
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void Layout::onBeforeVisitScissor()
@@ -359,16 +355,15 @@ void Layout::onAfterVisitScissor()
     }
 }
 
-void Layout::scissorClippingVisit(Renderer* renderer, const Mat4& parentTransform, uint32_t parentFlags)
+void Layout::scissorClippingvisit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    if (parentFlags & FLAGS_DIRTY_MASK)
+    // TODO: rctx flags
+    // if (parentFlags & FLAGS_DIRTY_MASK)
     {
         _clippingRectDirty = true;
     }
 
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _modelViewTransform);
-
+    auto renderer = rctx.renderer;
     auto* groupCommand = renderer->getNextGroupCommand();
     groupCommand->init(_globalZOrder);
     renderer->addCommand(groupCommand);
@@ -379,7 +374,7 @@ void Layout::scissorClippingVisit(Renderer* renderer, const Mat4& parentTransfor
     beforeVisitCmdScissor->func = AX_CALLBACK_0(Layout::onBeforeVisitScissor, this);
     renderer->addCommand(beforeVisitCmdScissor);
 
-    ProtectedNode::visit(renderer, parentTransform, parentFlags);
+    ProtectedNode::visit(rctx, rctx1);
 
     auto afterVisitCmdScissor = renderer->nextCallbackCommand();
     afterVisitCmdScissor->init(_globalZOrder);
@@ -387,7 +382,6 @@ void Layout::scissorClippingVisit(Renderer* renderer, const Mat4& parentTransfor
     renderer->addCommand(afterVisitCmdScissor);
 
     renderer->popGroup();
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void Layout::setClippingEnabled(bool able)
@@ -448,7 +442,7 @@ void Layout::setStencilClippingSize(const Vec2& /*size*/)
     if (_clippingEnabled && _clippingType == ClippingType::STENCIL)
     {
         _clippingStencil->clear();
-        _clippingStencil->drawSolidRect(Vec2::ZERO, _contentSize, Color4F::GREEN);  // Fix issue #1546 
+        _clippingStencil->drawSolidRect(Vec2::ZERO, _contentSize, Color4F::GREEN);  // Fix issue #1546
     }
 }
 
