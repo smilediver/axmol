@@ -279,7 +279,7 @@ void ProtectedNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     int i = 0;  // used by _children
     int j = 0;  // used by _protectedChildren

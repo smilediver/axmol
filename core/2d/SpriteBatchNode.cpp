@@ -186,7 +186,7 @@ void SpriteBatchNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
 
     sortAllChildren();
 
-    processParentFlags();
+    updateWorldTransform();
 
     if (isVisitableByVisitingCamera())
     {

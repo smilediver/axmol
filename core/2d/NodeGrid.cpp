@@ -102,8 +102,7 @@ void NodeGrid::visit(const RenderContext& rctx, RenderArg1& rctx1)
     }
 
     // TODO: rctx optimize
-    _modelViewTransform = this->transform(getParentWorldTransform());
-    _transformUpdated = false;
+    getNodeToWorldTransform(); // Trigger world transform update
 
     Director::Projection beforeProjectionType = Director::Projection::DEFAULT;
     if (_nodeGrid && _nodeGrid->isActive())

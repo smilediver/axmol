@@ -220,7 +220,7 @@ public:
     /** Returns the Material being used by the Mesh */
     Material* getMaterial() const;
 
-    void draw(const RenderContext& rctx,
+    void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1,
               float globalZ,
               const Mat4& transform,
               uint32_t flags,

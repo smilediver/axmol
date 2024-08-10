@@ -348,7 +348,7 @@ void RenderTexture::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     _sprite->visit(rctx, rctx1);
     if (isVisitableByVisitingCamera())
@@ -549,12 +549,11 @@ void RenderTexture::draw(const RenderContext& rctx, RenderArg1& rctx1)
 
 void RenderTexture::onBegin()
 {
-    /* TODO: rctx matrix
-    _oldProjMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _projectionMatrix);
+    // _oldProjMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    // _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _projectionMatrix);
 
-    _oldTransMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _transformMatrix);
+    // _oldTransMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    // _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _transformMatrix);
 
     if (!_keepMatrix)
     {
@@ -569,7 +568,7 @@ void RenderTexture::onBegin()
         Mat4 orthoMatrix;
         Mat4::createOrthographicOffCenter((float)-1.0 / widthRatio, (float)1.0 / widthRatio, (float)-1.0 / heightRatio,
                                           (float)1.0 / heightRatio, -1, 1, &orthoMatrix);
-        _director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
+        // _director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
     }
 
     Rect viewport;
@@ -587,30 +586,29 @@ void RenderTexture::onBegin()
 
     _oldRenderTarget = renderer->getRenderTarget();
     renderer->setRenderTarget(_renderTarget);
-    */
 }
 
 void RenderTexture::onEnd()
 {
-    /* TODO: rctx matrix
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _oldProjMatrix);
-    _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _oldTransMatrix);
+    // TODO: rctx
+    // _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, _oldProjMatrix);
+    // _director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, _oldTransMatrix);
 
     Renderer* renderer = _director->getRenderer();
     renderer->setViewPort(_oldViewport.x, _oldViewport.y, _oldViewport.width, _oldViewport.height);
 
     renderer->setRenderTarget(_oldRenderTarget);
-    */
 }
 
 void RenderTexture::begin()
 {
-    /* TODO: rctx matrix
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    _projectionMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    // TODO: rctx
+    // _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    // _projectionMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
 
-    _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    _transformMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    // TODO: rctx
+    // _director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+    // _transformMatrix = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 
     if (!_keepMatrix)
     {
@@ -627,7 +625,8 @@ void RenderTexture::begin()
         Mat4 orthoMatrix;
         Mat4::createOrthographicOffCenter((float)-1.0 / widthRatio, (float)1.0 / widthRatio, (float)-1.0 / heightRatio,
                                           (float)1.0 / heightRatio, -1, 1, &orthoMatrix);
-        _director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
+        // TODO: rctx
+        // _director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
     }
 
 
@@ -641,12 +640,10 @@ void RenderTexture::begin()
     beginCommand->init(_globalZOrder);
     beginCommand->func = AX_CALLBACK_0(RenderTexture::onBegin, this);
     renderer->addCommand(beginCommand);
-    */
 }
 
 void RenderTexture::end()
 {
-    /* TODO: rctx matrix
     Renderer* renderer = _director->getRenderer();
 
     auto endCommand = renderer->nextCallbackCommand();
@@ -656,9 +653,9 @@ void RenderTexture::end()
     renderer->addCommand(endCommand);
     renderer->popGroup();
 
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    */
+    // TODO: rctx
+    // _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+    // _director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 void RenderTexture::setClearFlags(ClearFlag clearFlags)

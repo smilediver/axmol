@@ -1547,7 +1547,7 @@ public:
      *
      * @return transformation matrix, in pixels.
      */
-    virtual Mat4 getNodeToWorldTransform() const;
+    virtual const Mat4& getNodeToWorldTransform() const;
     virtual AffineTransform getNodeToWorldAffineTransform() const;
 
     /**
@@ -1881,7 +1881,9 @@ protected:
     Vec2 convertToWindowSpace(const Vec2& nodePoint) const;
 
     Mat4 transform(const Mat4& parentTransform);
-    void processParentFlags() const;
+    void invalidateTransform();
+    void invalidateWorldTransform();
+    bool updateWorldTransform() const; // TODO: rctx: make private?
 
     virtual void updateCascadeOpacity();
     virtual void disableCascadeOpacity();
@@ -1935,8 +1937,8 @@ protected:
 
     Vec2 _contentSize;  ///< untransformed size of the node
 
-    Mat4 _modelViewTransform;  ///< ModelView transform of the Node.
     // "cache" variables are allowed to be mutable
+    mutable Mat4 _modelViewTransform;    ///< ModelView transform of the Node.
     mutable Mat4 _transform;             ///< transform
     mutable Mat4 _inverse;               ///< inverse transform
     mutable Mat4* _additionalTransform;  ///< two transforms needed by additional transforms
@@ -1994,12 +1996,11 @@ protected:
     bool _isTransitionFinished;  ///< flag to indicate whether the transition was finished
     bool _cascadeColorEnabled;
     bool _cascadeOpacityEnabled;
-    bool _contentSizeDirty;  ///< whether or not the contentSize is dirty
 
     mutable bool _transformDirty;            ///< transform dirty flag
     mutable bool _inverseDirty;              ///< inverse transform dirty flag
     mutable bool _additionalTransformDirty;  ///< transform dirty ?
-    bool _transformUpdated;                  ///< Whether or not the Transform object was updated since the last frame
+    mutable bool _worldTransformDirty;       ///< True if world transform is invalid
 
     bool _usingNormalizedPosition;
     bool _normalizedPositionDirty;

@@ -83,12 +83,11 @@ Node::Node()
     , _skewY(0.0f)
     , _anchorPoint(0, 0)
     , _contentSize(Vec2::ZERO)
-    , _contentSizeDirty(true)
     , _transformDirty(true)
     , _inverseDirty(true)
     , _additionalTransform(nullptr)
     , _additionalTransformDirty(false)
-    , _transformUpdated(true)
+    , _worldTransformDirty(true)
     // children (lazy allocs)
     , _childrenIndexer(nullptr)
     // lazy alloc
@@ -256,7 +255,7 @@ void Node::setSkewX(float skewX)
         return;
 
     _skewX            = skewX;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 float Node::getSkewY() const
@@ -270,7 +269,7 @@ void Node::setSkewY(float skewY)
         return;
 
     _skewY            = skewY;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 void Node::setLocalZOrder(int z)
@@ -322,7 +321,7 @@ void Node::setRotation(float rotation)
         return;
 
     _rotationZ_X = _rotationZ_Y = rotation;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 
     updateRotationQuat();
 }
@@ -337,7 +336,7 @@ void Node::setRotation3D(const Vec3& rotation)
     if (_rotationX == rotation.x && _rotationY == rotation.y && _rotationZ_X == rotation.z)
         return;
 
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 
     _rotationX = rotation.x;
     _rotationY = rotation.y;
@@ -390,7 +389,7 @@ void Node::setRotationQuat(const Quaternion& quat)
 {
     _rotationQuat = quat;
     updateRotation3D();
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 Quaternion Node::getRotationQuat() const
@@ -404,7 +403,7 @@ void Node::setRotationSkewX(float rotationX)
         return;
 
     _rotationZ_X      = rotationX;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 
     updateRotationQuat();
 }
@@ -420,7 +419,7 @@ void Node::setRotationSkewY(float rotationY)
         return;
 
     _rotationZ_Y      = rotationY;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 
     updateRotationQuat();
 }
@@ -439,7 +438,7 @@ void Node::setScale(float scale)
         return;
 
     _scaleX = _scaleY = _scaleZ = scale;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 /// scaleX getter
@@ -456,7 +455,7 @@ void Node::setScale(float scaleX, float scaleY)
 
     _scaleX           = scaleX;
     _scaleY           = scaleY;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 /// scaleX setter
@@ -466,7 +465,7 @@ void Node::setScaleX(float scaleX)
         return;
 
     _scaleX           = scaleX;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 /// scaleY getter
@@ -482,7 +481,7 @@ void Node::setScaleZ(float scaleZ)
         return;
 
     _scaleZ           = scaleZ;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 /// scaleY getter
@@ -498,7 +497,7 @@ void Node::setScaleY(float scaleY)
         return;
 
     _scaleY           = scaleY;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 /// position getter
@@ -527,7 +526,7 @@ void Node::setPosition(float x, float y)
     _position.x = x;
     _position.y = y;
 
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
     _usingNormalizedPosition                            = false;
 }
 
@@ -572,7 +571,7 @@ void Node::setPositionZ(float positionZ)
     if (_positionZ == positionZ)
         return;
 
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 
     _positionZ = positionZ;
 }
@@ -592,7 +591,7 @@ void Node::setPositionNormalized(const Vec2& position)
     _normalizedPosition      = position;
     _usingNormalizedPosition = true;
     _normalizedPositionDirty = true;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 ssize_t Node::getChildrenCount() const
@@ -612,8 +611,8 @@ void Node::setVisible(bool visible)
     if (visible != _visible)
     {
         _visible = visible;
-        if (_visible)
-            _transformUpdated = _transformDirty = _inverseDirty = true;
+        if (visible)
+            invalidateTransform();
     }
 }
 
@@ -634,7 +633,7 @@ void Node::setAnchorPoint(const Vec2& point)
     {
         _anchorPoint = point;
         _anchorPointInPoints.set(_contentSize.width * _anchorPoint.x, _contentSize.height * _anchorPoint.y);
-        _transformUpdated = _transformDirty = _inverseDirty = true;
+        invalidateTransform();
     }
 }
 
@@ -651,7 +650,8 @@ void Node::setContentSize(const Vec2& size)
         _contentSize = size;
 
         _anchorPointInPoints.set(_contentSize.width * _anchorPoint.x, _contentSize.height * _anchorPoint.y);
-        _transformUpdated = _transformDirty = _inverseDirty = _contentSizeDirty = true;
+        _normalizedPositionDirty = _usingNormalizedPosition;
+        invalidateTransform();
     }
 }
 
@@ -673,7 +673,7 @@ void Node::setParent(Node* parent)
 {
     _parent           = parent;
     _normalizedPositionDirty = true;
-    _transformUpdated = _transformDirty = _inverseDirty = true;
+    invalidateTransform();
 }
 
 /// isRelativeAnchorPoint getter
@@ -688,7 +688,7 @@ void Node::setIgnoreAnchorPointForPosition(bool newValue)
     if (newValue != _ignoreAnchorPointForPosition)
     {
         _ignoreAnchorPointForPosition = newValue;
-        _transformUpdated = _transformDirty = _inverseDirty = true;
+        invalidateTransform();
     }
 }
 
@@ -1187,7 +1187,6 @@ void Node::insertChild(Node* child, int z)
         sEngine->retainScriptObject(this, child);
     }
 #endif  // AX_ENABLE_GC_FOR_NATIVE_OBJECTS
-    _transformUpdated  = true;
     _reorderChildDirty = true;
     _children.pushBack(child);
     child->_setLocalZOrder(z);
@@ -1232,49 +1231,6 @@ void Node::visit()
     // visit(rctx, parentTransform, FLAGS_TRANSFORM_DIRTY);
 }
 
-// TODO: rctx
-void Node::processParentFlags() const
-{
-    auto& self = *const_cast<Node*>(this);
-
-    if (_usingNormalizedPosition)
-    {
-        AXASSERT(_parent, "setPositionNormalized() doesn't work with orphan nodes");
-        if (_normalizedPositionDirty)
-        {
-            auto& s           = _parent->getContentSize();
-            self._position.x       = _normalizedPosition.x * s.width;
-            self._position.y       = _normalizedPosition.y * s.height;
-            self._transformUpdated = _transformDirty = _inverseDirty = true;
-            self._normalizedPositionDirty                            = false;
-        }
-    }
-
-    // TODO: rctx
-    // // Fixes Github issue #16100. Basically when having two cameras, one camera might set as dirty the
-    // // node that is not visited by it, and might affect certain calculations. Besides, it is faster to do this.
-    // if (!isVisitableByVisitingCamera())
-    //     return parentFlags;
-
-    // TODO: rctx
-    // uint32_t flags = parentFlags;
-    // flags |= (_transformUpdated ? FLAGS_TRANSFORM_DIRTY : 0);
-    // flags |= (_contentSizeDirty ? FLAGS_CONTENT_SIZE_DIRTY : 0);
-    bool updateWorldTransform = _transformUpdated || _contentSizeDirty;
-
-    // TODO: rctx
-    // if (flags & FLAGS_DIRTY_MASK)
-    //     _modelViewTransform = this->transform(parentTransform);
-    if (updateWorldTransform)
-        self._modelViewTransform = self.transform(getParentWorldTransform());
-
-    self._transformUpdated = false;
-    self._contentSizeDirty = false;
-
-    // TODO: rctx
-    // return flags;
-}
-
 bool Node::isVisitableByVisitingCamera() const
 {
     auto camera          = Camera::getVisitingCamera();
@@ -1290,7 +1246,7 @@ void Node::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     bool visibleByCamera = isVisitableByVisitingCamera();
 
@@ -1683,6 +1639,22 @@ AffineTransform Node::getNodeToParentAffineTransform(Node* ancestor) const
 }
 const Mat4& Node::getNodeToParentTransform() const
 {
+    // TODO: rctx: probably need to track if content size is dirty
+    if (_usingNormalizedPosition)
+    {
+        AXASSERT(_parent, "setPositionNormalized() doesn't work with orphan nodes");
+        if (_normalizedPositionDirty)
+        {
+            auto& s = _parent->getContentSize();
+            // TODO: rctx: this const hack is unfortunate. Does position really need to be set for normalized case?
+            auto& self = *const_cast<Node*>(this);
+            self._position.x = _normalizedPosition.x * s.width;
+            self._position.y = _normalizedPosition.y * s.height;
+            self._normalizedPositionDirty = false;
+            self.invalidateTransform();
+        }
+    }
+
     if (_transformDirty)
     {
         // Translate values
@@ -1794,7 +1766,8 @@ const Mat4& Node::getNodeToParentTransform() const
         if (_transformDirty)
             _additionalTransform[1] = _transform;
 
-        if (_transformUpdated)
+        // TODO: rctx: why this is run only when world transform is dirty?
+        if (_worldTransformDirty)
             _transform = _additionalTransform[1] * _additionalTransform[0];
     }
 
@@ -1803,15 +1776,18 @@ const Mat4& Node::getNodeToParentTransform() const
     return _transform;
 }
 
+// TODO: rctx: this method doesn't make sense, _transform will be overwritten when it's recalculated, why it's needed?
+//       maybe it's usefull to override transform for render to textures?
 void Node::setNodeToParentTransform(const Mat4& transform)
 {
     _transform        = transform;
     _transformDirty   = false;
-    _transformUpdated = true;
 
     if (_additionalTransform)
         // _additionalTransform[1] has a copy of lastest transform
         _additionalTransform[1] = transform;
+
+    invalidateWorldTransform();
 }
 
 void Node::setAdditionalTransform(const AffineTransform& additionalTransform)
@@ -1842,7 +1818,7 @@ void Node::setAdditionalTransform(const Mat4* additionalTransform)
 
         _additionalTransform[0] = *additionalTransform;
     }
-    _transformUpdated = _additionalTransformDirty = _inverseDirty = true;
+    _worldTransformDirty = _additionalTransformDirty = _inverseDirty = true;
 }
 
 void Node::setAdditionalTransform(const Mat4& additionalTransform)
@@ -1874,9 +1850,42 @@ AffineTransform Node::getNodeToWorldAffineTransform() const
     return this->getNodeToParentAffineTransform(nullptr);
 }
 
-Mat4 Node::getNodeToWorldTransform() const
+const Mat4& Node::getNodeToWorldTransform() const
 {
-    return this->getNodeToParentTransform(nullptr);
+    updateWorldTransform();
+    return _modelViewTransform;
+}
+
+void Node::invalidateTransform()
+{
+    if (_transformDirty)
+        return;
+
+    _transformDirty = _inverseDirty = true;
+    invalidateWorldTransform();
+}
+
+void Node::invalidateWorldTransform()
+{
+    if (_worldTransformDirty)
+        return;
+
+    _worldTransformDirty = true;
+
+    for (auto child: _children)
+        child->invalidateWorldTransform();
+}
+
+bool Node::updateWorldTransform() const
+{
+    auto dirty = _worldTransformDirty;
+    if (dirty)
+    {
+        _modelViewTransform = getParentWorldTransform() * getNodeToParentTransform();
+        _worldTransformDirty = false;
+    }
+
+    return dirty;
 }
 
 AffineTransform Node::getWorldToNodeAffineTransform() const
@@ -1957,8 +1966,7 @@ const Mat4& Node::getParentWorldTransform() const
 {
     if (_parent)
     {
-        _parent->processParentFlags();
-        return _parent->_modelViewTransform;
+        return _parent->getNodeToWorldTransform();
     }
     else
     {

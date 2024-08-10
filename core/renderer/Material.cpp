@@ -2,7 +2,7 @@
  Copyright (c) 2015-2016 Chukong Technologies Inc.
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  Copyright (c) 2019-present Axmol Engine contributors (see AUTHORS.md).
- 
+
  https://axmol.dev/
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -143,7 +143,8 @@ bool Material::initWithProperties(Properties* materialProperties)
     return parseProperties(materialProperties);
 }
 
-void Material::draw(MeshCommand* meshCommands,
+void Material::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1,
+                    MeshCommand* meshCommands,
                     float globalZOrder,
                     backend::Buffer* vertexBuffer,
                     backend::Buffer* indexBuffer,
@@ -155,8 +156,8 @@ void Material::draw(MeshCommand* meshCommands,
     int i = 0;
     for (const auto& pass : _currentTechnique->_passes)
     {
-        pass->draw(&meshCommands[i], globalZOrder, vertexBuffer, indexBuffer, primitive, indexFormat, indexCount,
-                   modelView);
+        pass->draw(rctx, rctx1, &meshCommands[i], globalZOrder, vertexBuffer, indexBuffer, primitive, indexFormat,
+            indexCount, modelView);
         i++;
     }
 }

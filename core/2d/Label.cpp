@@ -2048,7 +2048,7 @@ void Label::visit(const RenderContext& rctx, RenderArg1& rctx1)
         updateContent();
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     // TODO: rctx optimize
     // if (!_utf8Text.empty() && _shadowEnabled && (_shadowDirty || (flags & FLAGS_DIRTY_MASK)))

@@ -425,7 +425,7 @@ Material* Mesh::getMaterial() const
     return _material;
 }
 
-void Mesh::draw(const RenderContext& rctx,
+void Mesh::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1,
                 float globalZOrder,
                 const Mat4& transform,
                 uint32_t flags,
@@ -544,8 +544,8 @@ void Mesh::draw(const RenderContext& rctx,
     }
 
     _meshIndexData->setPrimitiveType(_material->_drawPrimitive);
-    _material->draw(commands.data(), globalZ, getVertexBuffer(), getIndexBuffer(), getPrimitiveType(), getIndexFormat(),
-                    static_cast<unsigned int>(getIndexCount()), transform);
+    _material->draw(rctx, rctx1, commands.data(), globalZ, getVertexBuffer(), getIndexBuffer(), getPrimitiveType(),
+        getIndexFormat(), static_cast<unsigned int>(getIndexCount()), transform);
 }
 
 void Mesh::setSkin(MeshSkin* skin)

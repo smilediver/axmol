@@ -68,7 +68,8 @@ public:
     /** Returns the ProgramState */
     backend::ProgramState* getProgramState() const;
 
-    void draw(MeshCommand* meshCommand,
+    void draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1,
+              MeshCommand* meshCommand,
               float globalZOrder,
               backend::Buffer* vertexBuffer,
               backend::Buffer* indexBuffer,
@@ -104,8 +105,6 @@ public:
     Pass* clone() const;
 
     void setTechnique(Technique* technique);
-
-    void updateMVPUniform(const Mat4& modelView);
 
     void setUniformTexture(uint32_t slot, backend::TextureBackend*);      // u_tex0
     void setUniformNormTexture(uint32_t slot, backend::TextureBackend*);  // u_normalTex

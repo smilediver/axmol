@@ -142,8 +142,9 @@ void ClippingNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
     if (!_visible || !hasContent())
         return;
 
+    updateWorldTransform();
+
     auto renderer = rctx.renderer;
-    processParentFlags();
 
     // Add group command
 

@@ -515,7 +515,7 @@ void Director::setProjection(Projection projection)
         Mat4 orthoMatrix;
         Mat4::createOrthographicOffCenter(0, size.width, 0, size.height, -1024, 1024, &orthoMatrix);
         // TODO: rctx matrix
-        assert(false);
+        //assert(false);
         // loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
         // loadIdentityMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
         break;

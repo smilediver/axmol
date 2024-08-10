@@ -55,7 +55,8 @@ public:
 
     // override
     virtual Mat4 getWorldToNodeTransform() const override;
-    virtual Mat4 getNodeToWorldTransform() const override;
+    // TODO: rctx
+    // virtual Mat4 getNodeToWorldTransform() const override;
     virtual const Mat4& getNodeToParentTransform() const override;
     virtual void visit(const RenderContext& rctx, RenderArg1& rctx1) override;
 

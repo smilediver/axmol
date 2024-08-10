@@ -56,10 +56,11 @@ Mat4 AttachNode::getWorldToNodeTransform() const
     return mat;
 }
 
-Mat4 AttachNode::getNodeToWorldTransform() const
-{
-    return Node::getNodeToWorldTransform();
-}
+// TODO: rctx
+// Mat4 AttachNode::getNodeToWorldTransform() const
+// {
+//     return Node::getNodeToWorldTransform();
+// }
 
 const Mat4& AttachNode::getNodeToParentTransform() const
 {

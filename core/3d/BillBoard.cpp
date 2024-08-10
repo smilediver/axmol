@@ -106,7 +106,7 @@ void BillBoard::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     // TODO: rectx flags
     // Add 3D flag so all the children will be rendered as 3D object

@@ -503,7 +503,8 @@ void Camera::clearBackground()
 
 void Camera::apply()
 {
-    _viewProjectionUpdated = _transformUpdated;
+    // TODO: rctx camera
+    // _viewProjectionUpdated = _transformUpdated;
     applyViewport();
 }
 
@@ -541,7 +542,8 @@ void Camera::setNearPlane(float nearPlane)
 
 void Camera::visit(const RenderContext& rctx, RenderArg1& rctx1)
 {
-    _viewProjectionUpdated = _transformUpdated;
+    // TODO: rctx camera
+    // _viewProjectionUpdated = _transformUpdated;
     return Node::visit(rctx, rctx1);
 }
 

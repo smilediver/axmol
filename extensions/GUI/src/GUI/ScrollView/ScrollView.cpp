@@ -642,7 +642,7 @@ void ScrollView::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     this->beforeDraw();
     bool visibleByCamera = isVisitableByVisitingCamera();

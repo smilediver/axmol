@@ -173,7 +173,8 @@ void Pass::initUniformLocations()
     _locAmbientLigthColor = ps->getUniformLocation(s_ambientLightUniformColorName);
 }
 
-void Pass::draw(MeshCommand* meshCommand,
+void Pass::draw(const ax::RenderContext& rctx, ax::RenderArg1& rctx1,
+                MeshCommand* meshCommand,
                 float globalZOrder,
                 backend::Buffer* vertexBuffer,
                 backend::Buffer* indexBuffer,
@@ -182,27 +183,8 @@ void Pass::draw(MeshCommand* meshCommand,
                 unsigned int indexCount,
                 const Mat4& modelView)
 {
-
-    meshCommand->setBeforeCallback(AX_CALLBACK_0(Pass::onBeforeVisitCmd, this, meshCommand));
-    meshCommand->setAfterCallback(AX_CALLBACK_0(Pass::onAfterVisitCmd, this, meshCommand));
-    meshCommand->init(globalZOrder, modelView);
-    meshCommand->setPrimitiveType(primitive);
-    meshCommand->setIndexBuffer(indexBuffer, indexFormat);
-    meshCommand->setVertexBuffer(vertexBuffer);
-    meshCommand->setIndexDrawInfo(0, indexCount);
-    meshCommand->getPipelineDescriptor().programState = _programState;
-
-    auto* renderer = Director::getInstance()->getRenderer();
-
-    renderer->addCommand(meshCommand);
-}
-
-void Pass::updateMVPUniform(const Mat4& modelView)
-{
-    assert(false);
-    /* TODO: rctx matrix
-    auto& matrixP = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
-    auto mvp      = matrixP * modelView;
+    auto& matrixP = rctx.viewProjectionTransform;
+    auto mvp = matrixP * modelView;
     _programState->setUniform(_locMVPMatrix, mvp.m, sizeof(mvp.m));
     if (_locMVMatrix)
     {
@@ -219,7 +201,19 @@ void Pass::updateMVPUniform(const Mat4& modelView)
         auto normalMatrix = utils::getNormalMat3OfMat4(modelView);
         _programState->setUniform(_locNormalMatrix, &normalMatrix, sizeof(normalMatrix));
     }
-    */
+
+    meshCommand->setBeforeCallback(AX_CALLBACK_0(Pass::onBeforeVisitCmd, this, meshCommand));
+    meshCommand->setAfterCallback(AX_CALLBACK_0(Pass::onAfterVisitCmd, this, meshCommand));
+    meshCommand->init(globalZOrder, modelView);
+    meshCommand->setPrimitiveType(primitive);
+    meshCommand->setIndexBuffer(indexBuffer, indexFormat);
+    meshCommand->setVertexBuffer(vertexBuffer);
+    meshCommand->setIndexDrawInfo(0, indexCount);
+    meshCommand->getPipelineDescriptor().programState = _programState;
+
+    auto* renderer = Director::getInstance()->getRenderer();
+
+    renderer->addCommand(meshCommand);
 }
 
 void Pass::onBeforeVisitCmd(MeshCommand* command)
@@ -234,8 +228,6 @@ void Pass::onBeforeVisitCmd(MeshCommand* command)
     _rendererWinding          = renderer->getWinding();
     // apply state blocks
     _renderState.bindPass(this, command);
-
-    updateMVPUniform(command->getMV());
 }
 
 void Pass::onAfterVisitCmd(MeshCommand* command)

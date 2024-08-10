@@ -816,7 +816,7 @@ void MeshRenderer::visit(const ax::RenderContext& rctx, ax::RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
     // TODO: rctx flags
     // flags |= FLAGS_RENDER_AS_3D;
 
@@ -890,7 +890,7 @@ void MeshRenderer::draw(const RenderContext& rctx, RenderArg1& rctx1)
     {
         // TODO: rctx flags
         // mesh->draw(rctx, _globalZOrder, transform, flags, _lightMask, Vec4(color.r, color.g, color.b, color.a),
-        mesh->draw(rctx, _globalZOrder, _modelViewTransform, 0, _lightMask, Vec4(color.r, color.g, color.b, color.a),
+        mesh->draw(rctx, rctx1, _globalZOrder, _modelViewTransform, 0, _lightMask, Vec4(color.r, color.g, color.b, color.a),
                    _forceDepthWrite, _wireframe);
     }
 }

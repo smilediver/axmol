@@ -142,7 +142,7 @@ void ParticleBatchNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    processParentFlags();
+    updateWorldTransform();
 
     if (isVisitableByVisitingCamera())
         draw(rctx, rctx1);

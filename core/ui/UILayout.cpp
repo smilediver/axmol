@@ -207,9 +207,7 @@ void Layout::visit(const RenderContext& rctx, RenderArg1& rctx1)
         return;
     }
 
-    // TODO: rctx flags
-    // if (FLAGS_TRANSFORM_DIRTY & parentFlags || _transformUpdated || _contentSizeDirty)
-    if (_transformUpdated || _contentSizeDirty)
+    if (updateWorldTransform())
         _clippingRectDirty = true;
 
     adaptRenderers();
@@ -241,7 +239,7 @@ void Layout::stencilClippingvisit(const RenderContext& rctx, RenderArg1& rctx1)
     if (!_visible)
         return;
 
-    processParentFlags();
+    updateWorldTransform();
 
     // Add group command
 
