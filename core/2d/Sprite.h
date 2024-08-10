@@ -726,8 +726,6 @@ protected:
     bool _flippedX = false;  /// Whether the sprite is flipped horizontally or not
     bool _flippedY = false;  /// Whether the sprite is flipped vertically or not
 
-    bool _insideBounds = true;  /// whether or not the sprite was inside bounds the previous frame
-
     std::string _fileName;
     int _fileType = 0;
 

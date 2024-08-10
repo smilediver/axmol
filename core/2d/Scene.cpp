@@ -218,6 +218,8 @@ void Scene::render(Renderer* renderer, const Mat4& eyeTransform, const Mat4* eye
             .viewProjectionTransform = camera->getViewProjectionMatrix(),
             .viewTransform = camera->getViewMatrix(),
             .viewInverseTransform = camera->getViewMatrix().getInversed(),
+            .projectionTransform = camera->getProjectionMatrix(),
+            .viewportHalfSize = _director->getVisibleSize() * 0.5f,
         };
 
         auto rctx1 = RenderArg1{};

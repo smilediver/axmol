@@ -1060,33 +1060,44 @@ void Sprite::updateTransform()
     Node::updateTransform();
 }
 
+static bool checkIsVisible(const Mat4& viewProjectionTransform, const Vec2 viewportHalfSize, const Mat4& rectTransform, const Vec2 rectHalfSize)
+{
+    auto pos = Vec3(rectHalfSize.x, rectHalfSize.y, 0); // Center position in world space
+    rectTransform.transformPoint(&pos);
+    auto clipPos = Vec4(); // Center position in homogeneous clipping space
+    viewProjectionTransform.transformVector(Vec4(pos.x, pos.y, pos.z, 1.0f), &clipPos);
+
+    // TODO: rctx debug: remove `* 0.5f`
+    // Half size in homogeneous clipping space
+    auto clipSize =
+        Vec2(
+            std::max(
+                fabsf(rectHalfSize.x * rectTransform.m[0] + rectHalfSize.y * rectTransform.m[4]),
+                fabsf(rectHalfSize.x * rectTransform.m[0] - rectHalfSize.y * rectTransform.m[4])) * 0.5f,
+            std::max(
+                fabsf(rectHalfSize.x * rectTransform.m[1] + rectHalfSize.y * rectTransform.m[5]),
+                fabsf(rectHalfSize.x * rectTransform.m[0] - rectHalfSize.y * rectTransform.m[4])) * 0.5f
+        ) / viewportHalfSize * clipPos.w;
+
+    auto bounds = Vec2(clipPos.w + clipSize.x, clipPos.w + clipSize.y);
+
+    auto visible = clipPos.x >= -bounds.x && clipPos.x <= bounds.x && clipPos.y >= -bounds.y && clipPos.y <= bounds.y;
+    return visible;
+}
+
 // draw
 void Sprite::draw(const RenderContext& rctx, RenderArg1& rctx1)
 {
     if (_texture == nullptr || _texture->getBackendTexture() == nullptr)
         return;
 
-    setMVPMatrixUniform(rctx.viewProjectionTransform);
-
 #if AX_USE_CULLING
-    // Don't calculate the culling if the transform was not updated
-    auto visitingCamera = Camera::getVisitingCamera();
-    auto defaultCamera  = Camera::getDefaultCamera();
-    if (visitingCamera == nullptr)
-        _insideBounds = true;
-    else if (visitingCamera == defaultCamera)
-        // TODO: rctx
-        // _insideBounds = ((flags & FLAGS_TRANSFORM_DIRTY) || visitingCamera->isViewProjectionUpdated())
-        //                     ? rctx.renderer->checkVisibility(transform, _contentSize)
-        //                     : _insideBounds;
-        _insideBounds = rctx.renderer->checkVisibility(_modelViewTransform, _contentSize);
-    else
-        // XXX: this always return true since
-        _insideBounds = rctx.renderer->checkVisibility(_modelViewTransform, _contentSize);
-
-    if (_insideBounds)
+    if (!checkIsVisible(rctx.viewProjectionTransform, rctx.viewportHalfSize, _modelViewTransform, _contentSize * 0.5f))
+        return;
 #endif
     {
+        setMVPMatrixUniform(rctx.viewProjectionTransform);
+
         // TODO: rctx flags
         _trianglesCommand.init(_globalZOrder, _texture, _blendFunc, _polyInfo.triangles, _modelViewTransform, 0);
         rctx.renderer->addCommand(&_trianglesCommand);

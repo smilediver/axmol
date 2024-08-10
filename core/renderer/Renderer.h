@@ -73,6 +73,8 @@ struct RenderContext
     Mat4        viewProjectionTransform;
     Mat4        viewTransform;
     Mat4        viewInverseTransform;
+    Mat4        projectionTransform;
+    Vec2        viewportHalfSize;
 };
 
 

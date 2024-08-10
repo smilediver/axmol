@@ -784,6 +784,7 @@ void Renderer::flushTriangles()
     drawBatchedTriangles();
 }
 
+// TODO: rctx: remove
 // helpers
 bool Renderer::checkVisibility(const Mat4& transform, const Vec2& size)
 {
