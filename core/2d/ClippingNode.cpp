@@ -172,7 +172,6 @@ void ClippingNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
     }
     _stencil->visit(rctx, rctx1);
 
-
     auto afterDrawStencilCmd = renderer->nextCallbackCommand();
     afterDrawStencilCmd->init(_globalZOrder);
     afterDrawStencilCmd->func = AX_CALLBACK_0(StencilStateManager::onAfterDrawStencil, _stencilStateManager);
@@ -188,8 +187,6 @@ void ClippingNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
     renderer->addCommand(groupCommandChildren);
 
     renderer->pushGroup(groupCommandChildren->getRenderQueueID());
-
-    if (!_children.empty())
     {
         sortAllChildren();
         // draw children zOrder < 0
@@ -198,7 +195,7 @@ void ClippingNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
         {
             auto node = _children.at(i);
 
-            if (node && node->getLocalZOrder() < 0)
+            if (node != _stencil && node->getLocalZOrder() < 0)
                 node->visit(rctx, rctx1);
             else
                 break;
@@ -208,13 +205,9 @@ void ClippingNode::visit(const RenderContext& rctx, RenderArg1& rctx1)
             this->draw(rctx, rctx1);
 
         for (auto it = _children.cbegin() + i, itCend = _children.cend(); it != itCend; ++it)
-            (*it)->visit(rctx, rctx1);
+            if (*it != _stencil)
+                (*it)->visit(rctx, rctx1);
     }
-    else if (visibleByCamera)
-    {
-        this->draw(rctx, rctx1);
-    }
-
     renderer->popGroup();
 
     auto _afterVisitCmd = renderer->nextCallbackCommand();
@@ -266,25 +259,16 @@ void ClippingNode::setStencil(Node* stencil, bool uniqueChildStencils)
 #endif  // AX_ENABLE_GC_FOR_NATIVE_OBJECTS
 
     // cleanup current stencil
-    if (_stencil != nullptr && _stencil->isRunning())
-    {
-        _stencil->onExitTransitionDidStart();
-        _stencil->onExit();
-    }
+    if (_stencil != nullptr)
+        removeChild(_stencil);
     AX_SAFE_RELEASE_NULL(_stencil);
 
     // initialise new stencil
     _uniqueChildStencils = uniqueChildStencils;
     _stencil = stencil;
     AX_SAFE_RETAIN(_stencil);
-    if (_stencil != nullptr && this->isRunning())
-    {
-        _stencil->onEnter();
-        if (this->_isTransitionFinished)
-        {
-            _stencil->onEnterTransitionDidFinish();
-        }
-    }
+    if (_stencil != nullptr)
+        addChild(_stencil);
 
     // Clear all existing entries in _originalStencilProgramState since they belong to a different stencil
     for (auto&& stencilProgramState : _originalStencilProgramState)
